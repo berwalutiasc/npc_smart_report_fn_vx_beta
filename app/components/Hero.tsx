@@ -40,7 +40,7 @@ const Hero = () => {
               Streamline your reporting processes with our advanced platform. Efficient, secure, and designed for excellence.
             </p>
             <div className="flex gap-4">
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button variant="hero" size="lg">
                   Get Started
                 </Button>

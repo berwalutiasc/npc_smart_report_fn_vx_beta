@@ -35,7 +35,7 @@ const Navbar = () => {
             
             {/* Desktop Button */}
             <div className="hidden md:block">
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button variant="hero" size="lg">
                   Get Started
                 </Button>
