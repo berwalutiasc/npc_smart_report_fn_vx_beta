@@ -263,6 +263,59 @@
   border: 2px solid #ef4444;
 }
 
+/* ==========================
+   DARK MODE OVERRIDES
+   ========================== */
+[data-theme="dark"] .review-header {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .review-header-content {
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .review-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .review-meta {
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .review-meta strong {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .review-stats {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .stat-box {
+  border-right-color: var(--border-primary);
+}
+
+[data-theme="dark"] .stat-value {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .stat-label {
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .inspection-item {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .item-comment {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .btn-deny {
+  background: var(--bg-card);
+}
+
 .btn-deny:hover:not(:disabled) {
   background: #ef4444;
   color: white;

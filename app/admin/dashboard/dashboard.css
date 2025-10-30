@@ -1,7 +1,7 @@
 /**
- * DASHBOARD STYLES
+ * ADMIN DASHBOARD STYLES
  * 
- * This file contains all styles for the dashboard page including:
+ * This file contains all styles for the admin dashboard page including:
  * - Statistics cards
  * - Weekly activity chart
  * - Recent activity feed
@@ -376,28 +376,6 @@
   transform: translateX(4px);
 }
 
-/* ==========================
-   DARK MODE OVERRIDES
-   ========================== */
-[data-theme="dark"] .quick-link-item {
-  background: var(--bg-card);
-  border-color: var(--border-primary);
-}
-
-[data-theme="dark"] .quick-link-item:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-secondary);
-}
-
-[data-theme="dark"] .quick-link-title {
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .quick-link-description,
-[data-theme="dark"] .quick-link-arrow {
-  color: var(--text-tertiary);
-}
-
 /* ========================================
    RECENT REPORTS
    ======================================== */
@@ -468,9 +446,9 @@
   color: #f59e0b;
 }
 
-.status-draft {
-  background: rgba(107, 114, 128, 0.1);
-  color: #6b7280;
+.status-flagged {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 /* ========================================

@@ -256,6 +256,62 @@
   font-family: inherit;
 }
 
+/* ==========================
+   DARK MODE OVERRIDES
+   ========================== */
+[data-theme="dark"] .settings-card {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .settings-card-header {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .settings-card-header h3,
+[data-theme="dark"] .setting-label {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .setting-description {
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .theme-option {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .theme-option.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .setting-item:hover {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .setting-item:not(:last-child) {
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .setting-item-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .setting-item-description {
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .setting-select {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
 .setting-select:focus {
   outline: none;
   border-color: #3b82f6;

@@ -373,6 +373,51 @@
   font-family: inherit;
 }
 
+/* ==========================
+   DARK MODE OVERRIDES
+   ========================== */
+[data-theme="dark"] .profile-card,
+[data-theme="dark"] .info-card {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .info-card-header {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .info-card-title,
+[data-theme="dark"] .security-description {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .info-label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .info-value {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .info-value-readonly {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .info-input {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .info-input::placeholder,
+[data-theme="dark"] textarea.info-input::placeholder {
+  color: var(--text-muted);
+}
+
 .info-input:focus {
   outline: none;
   border-color: #3b82f6;

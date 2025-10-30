@@ -473,6 +473,82 @@
   width: 100%;
 }
 
+/* ==========================
+   DARK MODE OVERRIDES
+   ========================== */
+[data-theme="dark"] .btn-clear {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .btn-clear:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .form-item {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .form-item-header {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .form-item-title h4 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-item-title p {
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .status-btn {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .comment-field label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .comment-field textarea {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .comment-field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .tips-card,
+[data-theme="dark"] .stats-card {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .tips-header,
+[data-theme="dark"] .stats-header {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .tip-note {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .progress-bar {
+  border-top-color: var(--border-primary);
+}
+
+[data-theme="dark"] .progress-track {
+  background: var(--bg-tertiary);
+}
+
 .stats-header {
   padding: 0.625rem 0.875rem;
   background: #f9fafb;

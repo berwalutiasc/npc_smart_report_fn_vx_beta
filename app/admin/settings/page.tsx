@@ -1,23 +1,23 @@
 /**
- * STUDENT SETTINGS PAGE
+ * ADMIN SETTINGS PAGE
  * 
- * This page allows students to configure their account and preferences.
+ * This page allows admins to configure system and account settings.
  * 
- * LOCATION: /student/settings
+ * LOCATION: /admin/settings
  * 
  * FEATURES:
- * - Theme selection (Light, Dark, System)
+ * - System configuration
+ * - Theme selection
  * - Notification preferences
- * - Language selection
- * - Quick links to common actions
- * - System settings
- * - Save preferences
+ * - Email settings
+ * - Backup and maintenance
+ * - Quick actions
  */
 
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import StudentLayout from '../components/StudentLayout';
+import AdminLayout from '../components/AdminLayout';
 import Link from 'next/link';
 import { useTheme } from '@/components/ThemeProvider';
 import { 
@@ -33,32 +33,26 @@ import {
   Mail,
   Shield,
   Download,
-  Trash2,
+  Database,
   Save,
-  CheckCircle
+  CheckCircle,
+  Server,
+  Settings as SettingsIcon
 } from 'lucide-react';
-import './settings.css';
+import '../../student/settings/settings.css';
 
-// TYPES
-interface SettingsData {
-  theme: 'light' | 'dark' | 'system';
-  language: string;
-  emailNotifications: boolean;
-  pushNotifications: boolean;
-  reportReminders: boolean;
-  weeklyDigest: boolean;
-}
-
-const SettingsPage = () => {
+const AdminSettingsPage = () => {
   const { theme, setTheme } = useTheme();
   
-  const [settings, setSettings] = useState<SettingsData>({
-    theme: 'light',
+  const [settings, setSettings] = useState({
+    theme: 'light' as 'light' | 'dark' | 'system',
     language: 'en',
     emailNotifications: true,
     pushNotifications: true,
-    reportReminders: true,
-    weeklyDigest: false
+    reportAlerts: true,
+    weeklyReports: true,
+    systemAlerts: true,
+    autoBackup: true
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -69,25 +63,24 @@ const SettingsPage = () => {
     setSettings(prev => ({ ...prev, theme }));
   }, [theme]);
 
-  // Quick links data
   const quickLinks = [
     { 
       title: 'My Profile', 
-      description: 'View and edit your profile information',
-      href: '/student/profile', 
+      description: 'View and edit your admin profile',
+      href: '/admin/profile', 
       icon: <User size={20} />, 
       color: '#3b82f6' 
     },
     { 
       title: 'Change Password', 
       description: 'Update your account password',
-      href: '/student/profile#security', 
+      href: '/admin/profile#security', 
       icon: <Lock size={20} />, 
       color: '#8b5cf6' 
     },
     { 
       title: 'Logout', 
-      description: 'Sign out of your account',
+      description: 'Sign out of admin panel',
       href: '#logout', 
       icon: <LogOut size={20} />, 
       color: '#ef4444',
@@ -99,53 +92,58 @@ const SettingsPage = () => {
     }
   ];
 
-  // System actions
   const systemActions = [
     {
-      title: 'Download My Data',
-      description: 'Export all your data in JSON format',
-      icon: <Download size={20} />,
+      title: 'Backup Database',
+      description: 'Create a backup of all system data',
+      icon: <Database size={20} />,
       color: '#10b981',
-      action: () => alert('Data export started...')
+      action: () => alert('Starting database backup...')
     },
     {
-      title: 'Clear Cache',
-      description: 'Clear temporary files and cache',
-      icon: <Trash2 size={20} />,
+      title: 'Export Reports',
+      description: 'Export all reports in CSV format',
+      icon: <Download size={20} />,
+      color: '#3b82f6',
+      action: () => alert('Exporting reports...')
+    },
+    {
+      title: 'System Status',
+      description: 'Check system health and status',
+      icon: <Server size={20} />,
       color: '#f59e0b',
+      action: () => alert('System status: All services operational')
+    },
+    {
+      title: 'Maintenance Mode',
+      description: 'Enable/disable maintenance mode',
+      icon: <SettingsIcon size={20} />,
+      color: '#ef4444',
       action: () => {
-        if (confirm('Are you sure you want to clear cache?')) {
-          alert('Cache cleared successfully!');
+        if (confirm('Are you sure you want to toggle maintenance mode?')) {
+          alert('Maintenance mode toggled');
         }
       }
     }
   ];
 
-  // Handle setting change
-  const handleSettingChange = (key: keyof SettingsData, value: any) => {
+  const handleSettingChange = (key: keyof typeof settings, value: any) => {
     if (key === 'theme') {
       setTheme(value as 'light' | 'dark' | 'system');
     }
     setSettings({ ...settings, [key]: value });
   };
 
-  // Handle save settings
   const handleSaveSettings = async () => {
     setIsSaving(true);
-    
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
     setIsSaving(false);
     setShowSuccess(true);
-
-    // Hide success message after 3 seconds
     setTimeout(() => {
       setShowSuccess(false);
     }, 3000);
   };
 
-  // Get theme icon
   const getThemeIcon = (theme: string) => {
     switch (theme) {
       case 'light':
@@ -160,27 +158,16 @@ const SettingsPage = () => {
   };
 
   return (
-    <StudentLayout>
-      {/* PAGE HEADER */}
+    <AdminLayout>
       <div className="page-header" style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          fontSize: '2rem', 
-          fontWeight: '700', 
-          color: '#1a202c',
-          margin: 0 
-        }}>
-          Settings
+        <h1 style={{ fontSize: '2rem', fontWeight: '700', color: '#1a202c', margin: 0 }}>
+          Admin Settings
         </h1>
-        <p style={{ 
-          color: '#718096', 
-          marginTop: '0.5rem',
-          fontSize: '0.95rem' 
-        }}>
-          Manage your account settings and preferences
+        <p style={{ color: '#718096', marginTop: '0.5rem', fontSize: '0.95rem' }}>
+          Manage system configuration and your preferences
         </p>
       </div>
 
-      {/* SUCCESS MESSAGE */}
       {showSuccess && (
         <div className="success-message slide-down">
           <CheckCircle size={20} />
@@ -189,16 +176,14 @@ const SettingsPage = () => {
       )}
 
       <div className="settings-container">
-        {/* LEFT COLUMN - Settings */}
         <div className="settings-left">
-          {/* APPEARANCE SETTINGS */}
+          {/* APPEARANCE */}
           <div className="settings-card fade-in">
             <div className="settings-card-header">
               <Palette size={20} />
               <h3>Appearance</h3>
             </div>
             <div className="settings-card-body">
-              {/* Theme Selection */}
               <div className="setting-group">
                 <label className="setting-label">Theme</label>
                 <p className="setting-description">Choose your preferred color theme</p>
@@ -218,21 +203,20 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          {/* NOTIFICATION SETTINGS */}
+          {/* NOTIFICATIONS */}
           <div className="settings-card fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="settings-card-header">
               <Bell size={20} />
               <h3>Notifications</h3>
             </div>
             <div className="settings-card-body">
-              {/* Email Notifications */}
               <div className="setting-item">
                 <div className="setting-item-info">
                   <div className="setting-item-title">
                     <Mail size={16} />
                     Email Notifications
                   </div>
-                  <p className="setting-item-description">Receive email updates about your reports</p>
+                  <p className="setting-item-description">Receive email updates about system events</p>
                 </div>
                 <label className="toggle-switch">
                   <input
@@ -244,58 +228,55 @@ const SettingsPage = () => {
                 </label>
               </div>
 
-              {/* Push Notifications */}
               <div className="setting-item">
                 <div className="setting-item-info">
                   <div className="setting-item-title">
                     <Bell size={16} />
-                    Push Notifications
+                    Report Alerts
                   </div>
-                  <p className="setting-item-description">Get real-time push notifications</p>
+                  <p className="setting-item-description">Get notified about new reports</p>
                 </div>
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
-                    checked={settings.pushNotifications}
-                    onChange={(e) => handleSettingChange('pushNotifications', e.target.checked)}
+                    checked={settings.reportAlerts}
+                    onChange={(e) => handleSettingChange('reportAlerts', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
               </div>
 
-              {/* Report Reminders */}
               <div className="setting-item">
                 <div className="setting-item-info">
                   <div className="setting-item-title">
                     <Shield size={16} />
-                    Report Reminders
+                    System Alerts
                   </div>
-                  <p className="setting-item-description">Get reminded about pending reports</p>
+                  <p className="setting-item-description">Critical system notifications</p>
                 </div>
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
-                    checked={settings.reportReminders}
-                    onChange={(e) => handleSettingChange('reportReminders', e.target.checked)}
+                    checked={settings.systemAlerts}
+                    onChange={(e) => handleSettingChange('systemAlerts', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
               </div>
 
-              {/* Weekly Digest */}
               <div className="setting-item">
                 <div className="setting-item-info">
                   <div className="setting-item-title">
                     <Mail size={16} />
-                    Weekly Digest
+                    Weekly Reports
                   </div>
                   <p className="setting-item-description">Receive weekly summary emails</p>
                 </div>
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
-                    checked={settings.weeklyDigest}
-                    onChange={(e) => handleSettingChange('weeklyDigest', e.target.checked)}
+                    checked={settings.weeklyReports}
+                    onChange={(e) => handleSettingChange('weeklyReports', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
@@ -303,16 +284,34 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          {/* LANGUAGE SETTINGS */}
+          {/* SYSTEM SETTINGS */}
           <div className="settings-card fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="settings-card-header">
-              <Globe size={20} />
-              <h3>Language & Region</h3>
+              <Server size={20} />
+              <h3>System Configuration</h3>
             </div>
             <div className="settings-card-body">
-              <div className="setting-group">
+              <div className="setting-item">
+                <div className="setting-item-info">
+                  <div className="setting-item-title">
+                    <Database size={16} />
+                    Auto Backup
+                  </div>
+                  <p className="setting-item-description">Automatically backup data daily</p>
+                </div>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={settings.autoBackup}
+                    onChange={(e) => handleSettingChange('autoBackup', e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div className="setting-group" style={{ marginTop: '1rem' }}>
                 <label className="setting-label">Language</label>
-                <p className="setting-description">Select your preferred language</p>
+                <p className="setting-description">Select system language</p>
                 <select
                   className="setting-select"
                   value={settings.language}
@@ -341,7 +340,6 @@ const SettingsPage = () => {
           </button>
         </div>
 
-        {/* RIGHT COLUMN - Quick Links & Actions */}
         <div className="settings-right">
           {/* QUICK LINKS */}
           <div className="settings-card fade-in" style={{ animationDelay: '0.1s' }}>
@@ -389,8 +387,8 @@ const SettingsPage = () => {
           {/* SYSTEM ACTIONS */}
           <div className="settings-card fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="settings-card-header">
-              <Monitor size={20} />
-              <h3>System</h3>
+              <SettingsIcon size={20} />
+              <h3>System Actions</h3>
             </div>
             <div className="settings-card-body">
               <div className="system-actions-list">
@@ -414,9 +412,9 @@ const SettingsPage = () => {
           </div>
         </div>
       </div>
-    </StudentLayout>
+    </AdminLayout>
   );
 };
 
-export default SettingsPage;
+export default AdminSettingsPage;
 

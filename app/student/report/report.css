@@ -284,6 +284,39 @@
   border: 2px solid #10b981;
 }
 
+/* ==========================
+   DARK MODE OVERRIDES
+   ========================== */
+[data-theme="dark"] .report-card {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .report-card-header {
+  border-bottom-color: var(--border-primary);
+}
+
+[data-theme="dark"] .report-name {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .report-meta {
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .report-card-body {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .approval-badge {
+  /* keep status colors; adjust border subtlety */
+  border-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .action-btn.btn-download {
+  background: var(--bg-card);
+}
+
 .btn-download:hover:not(:disabled) {
   background: #10b981;
   color: white;
