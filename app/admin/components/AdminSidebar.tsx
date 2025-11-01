@@ -18,7 +18,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -35,6 +35,8 @@ import {
   Clock,
   FolderOpen
 } from 'lucide-react';
+import LogoutConfirmation from '@/components/LogoutConfirmation';
+import { useLogout } from '@/hooks/useLogout';
 import './sidebar.css';
 
 /**
@@ -138,16 +140,26 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   // Get current pathname to highlight active link
   const pathname = usePathname();
   const router = useRouter();
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const { logout, isLoggingOut } = useLogout();
 
   /**
-   * HANDLE LOGOUT
+   * HANDLE LOGOUT CLICK
    * 
-   * Logs out the admin and redirects to login page
+   * Shows the logout confirmation popup
    */
-  const handleLogout = () => {
-    console.log('Logging out...');
-    // TODO: Implement actual logout logic here
-    router.push('/auth/login');
+  const handleLogoutClick = () => {
+    setShowLogoutPopup(true);
+  };
+
+  /**
+   * HANDLE LOGOUT CONFIRM
+   * 
+   * Called when user confirms logout in the popup
+   */
+  const handleLogoutConfirm = async () => {
+    await logout();
+    setShowLogoutPopup(false);
   };
 
   /**
@@ -270,13 +282,21 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <div className="sidebar-footer">
           <button 
             className="logout-button"
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
           >
             <LogOut className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Logout</span>}
           </button>
         </div>
       </aside>
+
+      {/* LOGOUT CONFIRMATION POPUP */}
+      <LogoutConfirmation
+        isOpen={showLogoutPopup}
+        onClose={() => setShowLogoutPopup(false)}
+        onConfirm={handleLogoutConfirm}
+        isLoading={isLoggingOut}
+      />
     </>
   );
 };

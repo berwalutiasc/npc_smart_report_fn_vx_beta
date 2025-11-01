@@ -10,6 +10,7 @@ import SubmitButton from '@/components/submitButton/submitButton';
 import FloatingClock from '@/components/FloatingClock';
 import '@/auth/authLayout.css';
 import Link from 'next/link';
+import { toastError, toastSuccess } from '@/lib/toast-utils';
 
 const SignupPage = () => {
   const router = useRouter();
@@ -42,21 +43,33 @@ const SignupPage = () => {
     
     // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log('Signup attempt:', {
-        name: name.value,
-        email: email.value,
-        phone: phone.value,
-        password: password.value
-      });
-      // Handle successful signup here
-      alert('Account created successfully! Please verify your account.');
       
-      // Redirect to verification page
-      router.push('/auth/verify');
+      const response = await fetch('http://localhost:5000/api/auth/createStudent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: name.value, email: email.value, phone: phone.value, password: password.value }),
+      });
+      const data = await response.json();
+      console.log(data);
+      if (response.ok) {
+        toastSuccess({
+          title: 'Signup Successful',
+          description: 'Check your email for verification and complete your registration...',
+        });} else {
+          toastError({
+            title: 'Signup Failed',
+            description: data.error || 'Please check your details and try again.',
+          });
+        }
+       
     } catch (error) {
       console.error('Signup error:', error);
-      alert('Signup failed. Please try again.');
+      toastError({
+        title: 'Connection Error',
+        description: 'Unable to connect to the server. Please try again later.',
+      });
     } finally {
       setIsLoading(false);
     }

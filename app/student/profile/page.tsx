@@ -36,6 +36,8 @@ import {
   FileText,
   Shield
 } from 'lucide-react';
+import LogoutConfirmation from '@/components/LogoutConfirmation';
+import { useLogout } from '@/hooks/useLogout';
 import './profile.css';
 
 // TYPES
@@ -83,6 +85,8 @@ const ProfilePage = () => {
     confirmPassword: ''
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const { logout, isLoggingOut } = useLogout();
 
   // Statistics
   const stats = [
@@ -149,13 +153,15 @@ const ProfilePage = () => {
     alert('Password changed successfully!');
   };
 
-  // Handle logout
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
-      // Implement logout logic here
-      alert('Logging out...');
-      // window.location.href = '/login';
-    }
+  // Handle logout click
+  const handleLogoutClick = () => {
+    setShowLogoutPopup(true);
+  };
+
+  // Handle logout confirm
+  const handleLogoutConfirm = async () => {
+    await logout();
+    setShowLogoutPopup(false);
   };
 
   return (
@@ -216,7 +222,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="profile-actions">
-              <button className="btn-logout" onClick={handleLogout}>
+              <button className="btn-logout" onClick={handleLogoutClick}>
                 <LogOut size={18} />
                 Logout
               </button>
@@ -481,6 +487,14 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT CONFIRMATION POPUP */}
+      <LogoutConfirmation
+        isOpen={showLogoutPopup}
+        onClose={() => setShowLogoutPopup(false)}
+        onConfirm={handleLogoutConfirm}
+        isLoading={isLoggingOut}
+      />
     </StudentLayout>
   );
 };

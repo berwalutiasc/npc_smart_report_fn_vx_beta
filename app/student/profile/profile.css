@@ -418,6 +418,29 @@
   color: var(--text-muted);
 }
 
+[data-theme="dark"] .stat-value {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .stat-label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .stat-item:hover {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .btn-cancel {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .btn-cancel:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-secondary);
+}
+
 .info-input:focus {
   outline: none;
   border-color: #3b82f6;
@@ -477,6 +500,19 @@ select.info-input {
   color: white;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Change Password Button Dark Mode */
+[data-theme="dark"] .btn-change-password {
+  background: transparent;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+}
+
+[data-theme="dark"] .btn-change-password:hover {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
 }
 
 /* Password Form */

@@ -35,12 +35,16 @@ import {
   Users,
   TrendingUp
 } from 'lucide-react';
+import LogoutConfirmation from '@/components/LogoutConfirmation';
+import { useLogout } from '@/hooks/useLogout';
 import '../../student/profile/profile.css';
 
 const AdminProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const { logout, isLoggingOut } = useLogout();
 
   const [adminData, setAdminData] = useState({
     firstName: 'Admin',
@@ -70,10 +74,15 @@ const AdminProfilePage = () => {
     alert('Profile updated successfully!');
   };
 
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
-      alert('Logging out...');
-    }
+  // Handle logout click
+  const handleLogoutClick = () => {
+    setShowLogoutPopup(true);
+  };
+
+  // Handle logout confirm
+  const handleLogoutConfirm = async () => {
+    await logout();
+    setShowLogoutPopup(false);
   };
 
   return (
@@ -121,7 +130,7 @@ const AdminProfilePage = () => {
             </div>
 
             <div className="profile-actions">
-              <button className="btn-logout" onClick={handleLogout}>
+              <button className="btn-logout" onClick={handleLogoutClick}>
                 <LogOut size={18} />
                 Logout
               </button>
@@ -279,6 +288,14 @@ const AdminProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT CONFIRMATION POPUP */}
+      <LogoutConfirmation
+        isOpen={showLogoutPopup}
+        onClose={() => setShowLogoutPopup(false)}
+        onConfirm={handleLogoutConfirm}
+        isLoading={isLoggingOut}
+      />
     </AdminLayout>
   );
 };

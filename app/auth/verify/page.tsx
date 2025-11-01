@@ -7,8 +7,11 @@ import FloatingClock from '@/components/FloatingClock';
 import '@/auth/authLayout.css';
 import './verify.css';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toastError, toastSuccess } from '@/lib/toast-utils';
 
 const VerifyPage = () => {
+  const router = useRouter();
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -75,13 +78,57 @@ const VerifyPage = () => {
     
     // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log('OTP Verification:', otpValue);
-      alert('Verification successful!');
-      // Handle successful verification here
+      
+      //send data to the api
+      const response = await fetch('http://localhost:5000/api/auth/verifyLoginOtp', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ otp: otpValue }),
+      });
+      const data = await response.json();
+      console.log(data);
+      if (response.ok) {
+        toastSuccess({
+          title: 'Verification Successful',
+          description: 'Redirecting to Dashboard...',
+        });
+
+        //chosing directory
+        //getting the role sent from json response in api
+        let directory = '';
+        const role = data.role;
+        if (role === 'ADMIN') {
+          directory = '/admin/dashboard';
+        } else if (role === 'STUDENT') {
+          directory = '/student/dashboard';
+        }
+
+
+        //save the role to local storage
+        localStorage.setItem('role', role);
+        localStorage.setItem('studentName', data.user.name);
+        localStorage.setItem('studentEmail', data.user.email);
+        localStorage.setItem('studentRole', data.user.studentRole);
+        
+
+        //wait 2 seconds before redirecting to let user see the toast
+        setTimeout(() => {
+          router.push(`${process.env.NEXT_PUBLIC_BASE_URL}${directory}`);
+        }, 3000);
+      } else {
+        toastError({
+          title: 'Verification Failed',
+          description: data.error || 'Please check your OTP and try again.',
+        })
+      }
     } catch (error) {
-      console.error('Verification error:', error);
-      alert('Verification failed. Please try again.');
+      toastError({
+        title: 'Connection Error',
+        description: 'Unable to connect to the server. Please try again later.',
+      });
     } finally {
       setIsLoading(false);
     }

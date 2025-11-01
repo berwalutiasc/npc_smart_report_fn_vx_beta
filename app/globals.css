@@ -195,6 +195,20 @@
   animation: float 3s ease-in-out infinite;
 }
 
+/* Subtle bounce animation for toasts */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle .6s ease-in-out infinite;
+}
+
 /* Gradient background classes */
 .bg-gradient-primary {
   background: var(--gradient-primary);

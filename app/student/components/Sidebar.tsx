@@ -18,7 +18,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -32,6 +32,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import LogoutConfirmation from '@/components/LogoutConfirmation';
+import { useLogout } from '@/hooks/useLogout';
 import './sidebar.css';
 
 /**
@@ -57,11 +59,15 @@ interface SidebarProps {
  * @property {string} label - Display text for the menu item
  * @property {string} href - URL path to navigate to
  * @property {React.ComponentType} icon - Lucide icon component
+ * @property {string[]} [allowedRoles] - Optional array of roles that can access this item
+ * @property {string[]} [hiddenRoles] - Optional array of roles that should hide this item
  */
 interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  allowedRoles?: string[];
+  hiddenRoles?: string[];
 }
 
 /**
@@ -81,39 +87,73 @@ const navigationItems: NavItem[] = [
   {
     label: 'Dashboard',
     href: '/student/dashboard',
-    icon: LayoutDashboard, // Home/grid icon
+    icon: LayoutDashboard,
+    // All roles can access dashboard
   },
   {
     label: 'Submit',
     href: '/student/submit',
-    icon: FileText, // Submit report icon
+    icon: FileText,
+    hiddenRoles: ['CP', 'CS', 'CC']
   },
   {
     label: 'Report',
     href: '/student/report',
-    icon: FileText, // Document/file icon
+    icon: FileText,
   },
   {
     label: 'Review',
     href: '/student/review',
-    icon: Eye, // Eye/view icon
+    icon: Eye,
+    hiddenRoles: ['CC','WS']
   },
   {
     label: 'Reminder',
     href: '/student/reminder',
-    icon: Bell, // Notification/bell icon
+    icon: Bell,
+    hiddenRoles: ['CP','CS','CC']
   },
   {
     label: 'Profile',
     href: '/student/profile',
-    icon: User, // User profile icon
+    icon: User,
+    // All roles can access profile
   },
   {
     label: 'Settings',
     href: '/student/settings',
-    icon: Settings, // Settings/gear icon
+    icon: Settings,
   },
 ];
+
+/**
+ * ROLE-BASED FILTERING LOGIC
+ * 
+ * @param role - The user's role from localStorage
+ * @param items - Array of navigation items to filter
+ * @returns Filtered array of navigation items based on role permissions
+ */
+const filterNavigationItemsByRole = (studentRole: string | null, items: NavItem[]): NavItem[] => {
+  if (!studentRole) {
+    // If no role is set, return only items without restrictions
+    return items.filter(item => !item.allowedRoles && !item.hiddenRoles);
+  }
+
+  return items.filter(item => {
+    // If item has allowedRoles, check if user's role is included
+    if (item.allowedRoles && item.allowedRoles.length > 0) {
+      return item.allowedRoles.includes(studentRole);
+    }
+    
+    // If item has hiddenRoles, check if user's role is NOT included
+    if (item.hiddenRoles && item.hiddenRoles.length > 0) {
+      return !item.hiddenRoles.includes(studentRole);
+    }
+    
+    // If no restrictions, show the item
+    return true;
+  });
+};
 
 /**
  * SIDEBAR COMPONENT
@@ -128,22 +168,40 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Get current pathname to highlight active link
   const pathname = usePathname();
   const router = useRouter();
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const { logout, isLoggingOut } = useLogout();
+  const role = localStorage.getItem('role');
+  const studentName = localStorage.getItem('studentName');
+  const studentEmail = localStorage.getItem('studentEmail');
+  const studentRole = localStorage.getItem('studentRole');
 
   /**
-   * HANDLE LOGOUT
+   * FILTERED NAVIGATION ITEMS
    * 
-   * Logs out the user and redirects to login page
-   * In a real app, this would:
-   * 1. Clear authentication tokens
-   * 2. Clear user session
-   * 3. Call logout API
-   * 4. Redirect to login
+   * Uses useMemo to avoid recalculating on every render
+   * Only recalculates when the role changes
    */
-  const handleLogout = () => {
-    console.log('Logging out...');
-    // TODO: Implement actual logout logic here
-    // Example: await logout(); clearTokens(); etc.
-    router.push('/auth/login');
+  const filteredNavigationItems = useMemo(() => {
+    return filterNavigationItemsByRole(studentRole, navigationItems);
+  }, [studentRole]);
+
+  /**
+   * HANDLE LOGOUT CLICK
+   * 
+   * Shows the logout confirmation popup
+   */
+  const handleLogoutClick = () => {
+    setShowLogoutPopup(true);
+  };
+
+  /**
+   * HANDLE LOGOUT CONFIRM
+   * 
+   * Called when user confirms logout in the popup
+   */
+  const handleLogoutConfirm = async () => {
+    await logout();
+    setShowLogoutPopup(false);
   };
 
   /**
@@ -178,7 +236,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && (
               <>
                 <div className="logo-icon">📊</div>
-                <span className="logo-text">NPC Student</span>
+                <span className="logo-text">NPC Student </span>
               </>
             )}
             {/* Show just icon when collapsed */}
@@ -217,21 +275,22 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           {!isCollapsed && (
             <div className="user-info">
-              <p className="user-name">John Doe</p>
-              <p className="user-role">Student</p>
+              <p className="user-name">{studentName}</p>
+              <p className="user-role">{role} | {studentRole}</p>
+              <p className="user-email">{studentEmail}</p>
             </div>
           )}
         </div>
 
         {/* 
           NAVIGATION MENU
-          - Renders all navigation items from the array above
+          - Renders filtered navigation items based on role
           - Highlights active page
           - Shows icons only when collapsed
         */}
         <nav className="sidebar-nav">
           <ul className="nav-list">
-            {navigationItems.map((item) => {
+            {filteredNavigationItems.map((item) => {
               // Check if this link is currently active
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -268,16 +327,23 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="sidebar-footer">
           <button 
             className="logout-button"
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
           >
             <LogOut className="nav-icon" />
             {!isCollapsed && <span className="nav-label">Logout</span>}
           </button>
         </div>
       </aside>
+
+      {/* LOGOUT CONFIRMATION POPUP */}
+      <LogoutConfirmation
+        isOpen={showLogoutPopup}
+        onClose={() => setShowLogoutPopup(false)}
+        onConfirm={handleLogoutConfirm}
+        isLoading={isLoggingOut}
+      />
     </>
   );
 };
 
 export default Sidebar;
-

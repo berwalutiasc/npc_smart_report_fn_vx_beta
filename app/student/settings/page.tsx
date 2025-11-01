@@ -37,6 +37,8 @@ import {
   Save,
   CheckCircle
 } from 'lucide-react';
+import LogoutConfirmation from '@/components/LogoutConfirmation';
+import { useLogout } from '@/hooks/useLogout';
 import './settings.css';
 
 // TYPES
@@ -63,11 +65,19 @@ const SettingsPage = () => {
 
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const { logout, isLoggingOut } = useLogout();
   
   // Sync settings with theme context
   useEffect(() => {
     setSettings(prev => ({ ...prev, theme }));
   }, [theme]);
+
+  // Handle logout confirm
+  const handleLogoutConfirm = async () => {
+    await logout();
+    setShowLogoutPopup(false);
+  };
 
   // Quick links data
   const quickLinks = [
@@ -92,9 +102,7 @@ const SettingsPage = () => {
       icon: <LogOut size={20} />, 
       color: '#ef4444',
       onClick: () => {
-        if (confirm('Are you sure you want to logout?')) {
-          alert('Logging out...');
-        }
+        setShowLogoutPopup(true);
       }
     }
   ];
@@ -414,6 +422,14 @@ const SettingsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* LOGOUT CONFIRMATION POPUP */}
+      <LogoutConfirmation
+        isOpen={showLogoutPopup}
+        onClose={() => setShowLogoutPopup(false)}
+        onConfirm={handleLogoutConfirm}
+        isLoading={isLoggingOut}
+      />
     </StudentLayout>
   );
 };

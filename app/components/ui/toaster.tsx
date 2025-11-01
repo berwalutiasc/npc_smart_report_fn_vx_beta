@@ -1,17 +1,36 @@
 import { useToast } from "@/hooks/use-toast";
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
+import { CheckCircle2, XCircle, AlertCircle, Info } from "lucide-react";
 
 export function Toaster() {
   const { toasts } = useToast();
 
+  const getIcon = (variant?: string) => {
+    switch (variant) {
+      case "success":
+        return <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />;
+      case "destructive":
+        return <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />;
+      case "warning":
+        return <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />;
+      default:
+        return <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />;
+    }
+  };
+
   return (
-    <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+    <ToastProvider duration={3000}>
+      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
         return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && <ToastDescription>{description}</ToastDescription>}
+          <Toast key={id} variant={variant} {...props}>
+            <div className="grid gap-0.5 sm:gap-1 flex-1 min-w-0">
+              {title && (
+                <ToastTitle className="flex items-center gap-1.5 sm:gap-2">
+                  {getIcon(variant)}
+                  <span className="truncate">{title}</span>
+                </ToastTitle>
+              )}
+              {description && <ToastDescription className="line-clamp-2">{description}</ToastDescription>}
             </div>
             {action}
             <ToastClose />
