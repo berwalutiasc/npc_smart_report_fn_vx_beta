@@ -297,6 +297,62 @@
 }
 
 /* ========================================
+   GENERAL COMMENT FIELD
+   ======================================== */
+
+.general-comment-field {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.general-comment-field:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.general-comment-field label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.general-comment-field textarea {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 0.9375rem;
+  color: #1a202c;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.general-comment-field textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.general-comment-field textarea:hover:not(:focus) {
+  border-color: #cbd5e0;
+}
+
+.general-comment-field textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* ========================================
    SUBMIT BUTTON
    ======================================== */
 
@@ -521,6 +577,25 @@
 }
 
 [data-theme="dark"] .comment-field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .general-comment-field {
+  background: var(--bg-card);
+  border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .general-comment-field label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .general-comment-field textarea {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .general-comment-field textarea::placeholder {
   color: var(--text-muted);
 }
 

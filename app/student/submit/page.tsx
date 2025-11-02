@@ -30,6 +30,7 @@ import {
   TrendingUp,
   Info,
 } from "lucide-react";
+import { toastSuccess, toastError } from "@/lib/toast-utils";
 import "./submit.css";
 
 // TYPES
@@ -45,7 +46,11 @@ const SubmitPage = () => {
   const [items, setItems] = useState<InspectionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [generalComment, setGeneralComment] = useState("");
+  const [studentEmail, setStudentEmail] = useState("");
+  useEffect(() => {
+    setStudentEmail(localStorage.getItem("studentEmail") || "");
+  }, []);
 
   /**
    * FETCH INSPECTION ITEMS FROM BACKEND
@@ -129,23 +134,25 @@ const SubmitPage = () => {
   const handleSubmit = async () => {
     const hasUnmarked = items.some((item) => item.status === "pending");
     if (hasUnmarked) {
-      alert("Please mark all items before submitting!");
+      toastError({
+        title: "Incomplete Form",
+        description: "Please mark all items before submitting!",
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const reporterId = localStorage.getItem("userId");
-      const classId = localStorage.getItem("classId");
-
       const response = await fetch("http://localhost:5000/api/student/report/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({
-          reporterId,
-          classId,
-          title: "Classroom Inspection Report",
-          generalComment: "Inspection completed successfully.",
+          reporterEmail: studentEmail,
+          //add date of today on title
+          title: "Classroom Inspection Report " + new Date().toLocaleDateString(),
+          //we will provide the comment / notes that was sent by the student in the comment field not for each item but the overall comment / notes
+          generalComment: generalComment || "Inspection completed successfully.",
           itemEvaluated: items,
           category: "ONTIME",
         }),
@@ -153,23 +160,30 @@ const SubmitPage = () => {
 
       const data = await response.json();
       if (data.success) {
-        setShowSuccess(true);
-        setTimeout(() => {
-          setShowSuccess(false);
-          setItems(
-            items.map((item) => ({
-              ...item,
-              status: "pending",
-              comment: "",
-            }))
-          );
-        }, 3000);
+        toastSuccess({
+          title: "Report Submitted Successfully!",
+          description: "Your inspection report has been submitted for review",
+        });
+        setItems(
+          items.map((item) => ({
+            ...item,
+            status: "pending",
+            comment: "",
+          }))
+        );
+        setGeneralComment("");
       } else {
-        alert(data.message || "Failed to submit report.");
+        toastError({
+          title: "Submission Failed",
+          description: data.message || "Failed to submit report.",
+        });
       }
     } catch (err) {
       console.error("Error submitting report:", err);
-      alert("An error occurred while submitting your report.");
+      toastError({
+        title: "Error",
+        description: "An error occurred while submitting your report.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -228,17 +242,6 @@ const SubmitPage = () => {
           Complete the inspection checklist and submit your report
         </p>
       </div>
-
-      {/* SUCCESS MESSAGE */}
-      {showSuccess && (
-        <div className="success-banner slide-down">
-          <CheckCircle size={24} />
-          <div>
-            <h4>Report Submitted Successfully!</h4>
-            <p>Your inspection report has been submitted for review</p>
-          </div>
-        </div>
-      )}
 
       <div className="submit-container">
         {/* LEFT COLUMN - FORM */}
@@ -325,6 +328,20 @@ const SubmitPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* GENERAL COMMENT / NOTES FIELD */}
+          <div className="general-comment-field fade-in" style={{ animationDelay: "0.5s" }}>
+            <label htmlFor="generalComment">
+              Comment / Notes
+            </label>
+            <textarea
+              id="generalComment"
+              placeholder="Add your overall observations or notes for this inspection report..."
+              value={generalComment}
+              onChange={(e) => setGeneralComment(e.target.value)}
+              rows={4}
+            />
           </div>
 
           {/* SUBMIT BUTTON */}
