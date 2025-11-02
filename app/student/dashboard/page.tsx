@@ -47,17 +47,17 @@ interface StatCardData {
 }
 
 interface ActivityItem {
-  id: number;
-  type: 'submitted' | 'approved' | 'pending';
+  id: string;
+  type: 'submitted' | 'approved' | 'pending' | 'rejected';
   title: string;
   time: string;
   user?: string;
 }
 
 interface RecentReport {
-  id: number;
+  id: string;
   title: string;
-  status: 'approved' | 'pending' | 'draft';
+  status: 'approved' | 'pending' | 'draft' | 'rejected';
   date: string;
   class: string;
 }
@@ -67,62 +67,21 @@ interface WeeklyData {
   count: number;
 }
 
-// MOCK DATA (Simulating API response)
-const mockStats: StatCardData[] = [
-  {
-    title: 'Total Reports',
-    value: 24,
-    icon: <FileText size={24} />,
-    trend: 12.5,
-    color: '#3b82f6'
-  },
-  {
-    title: 'Active Students',
-    value: 156,
-    icon: <Users size={24} />,
-    trend: 8.2,
-    color: '#10b981'
-  },
-  {
-    title: 'Classes',
-    value: 8,
-    icon: <GraduationCap size={24} />,
-    trend: 0,
-    color: '#f59e0b'
-  },
-  {
-    title: 'This Week',
-    value: 12,
-    icon: <TrendingUp size={24} />,
-    trend: 15.3,
-    color: '#8b5cf6'
-  }
-];
-
-const mockActivities: ActivityItem[] = [
-  { id: 1, type: 'submitted', title: 'Weekly Progress Report', time: '2 minutes ago', user: 'John Doe' },
-  { id: 2, type: 'approved', title: 'Lab Report - Chemistry', time: '1 hour ago', user: 'Jane Smith' },
-  { id: 3, type: 'pending', title: 'Math Assignment Review', time: '3 hours ago', user: 'Mike Johnson' },
-  { id: 4, type: 'submitted', title: 'English Essay Draft', time: '5 hours ago', user: 'Sarah Williams' },
-  { id: 5, type: 'approved', title: 'Physics Experiment Report', time: '1 day ago', user: 'Tom Brown' }
-];
-
-const mockRecentReports: RecentReport[] = [
-  { id: 1, title: 'Weekly Progress Report', status: 'pending', date: '2024-10-30', class: 'Computer Science' },
-  { id: 2, title: 'Lab Report - Chemistry', status: 'approved', date: '2024-10-29', class: 'Chemistry' },
-  { id: 3, title: 'Math Assignment', status: 'approved', date: '2024-10-28', class: 'Mathematics' },
-  { id: 4, title: 'English Essay', status: 'draft', date: '2024-10-27', class: 'English' }
-];
-
-const mockWeeklyData: WeeklyData[] = [
-  { day: 'Mon', count: 12 },
-  { day: 'Tue', count: 19 },
-  { day: 'Wed', count: 15 },
-  { day: 'Thu', count: 22 },
-  { day: 'Fri', count: 18 },
-  { day: 'Sat', count: 8 },
-  { day: 'Sun', count: 6 }
-];
+interface ApiResponse {
+  success: boolean;
+  data: {
+    stats: Array<{
+      title: string;
+      value: number;
+      icon: string;
+      trend: number;
+      color: string;
+    }>;
+    weeklyData: WeeklyData[];
+    recentActivity: ActivityItem[];
+    recentReports: RecentReport[];
+  };
+}
 
 const quickLinks = [
   { title: 'Profile', href: '/student/profile', icon: <User size={20} />, color: '#3b82f6' },
@@ -130,6 +89,14 @@ const quickLinks = [
   { title: 'Reminders', href: '/student/reminder', icon: <Bell size={20} />, color: '#f59e0b' },
   { title: 'Reviews', href: '/student/review', icon: <Eye size={20} />, color: '#8b5cf6' }
 ];
+
+// Icon mapping for API response
+const iconMap = {
+  'FileText': <FileText size={24} />,
+  'Users': <Users size={24} />,
+  'GraduationCap': <GraduationCap size={24} />,
+  'TrendingUp': <TrendingUp size={24} />
+};
 
 /**
  * DASHBOARD PAGE COMPONENT
@@ -140,24 +107,118 @@ const DashboardPage = () => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [reports, setReports] = useState<RecentReport[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate API call with loading
+  // Fetch data from API
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setStats(mockStats);
-      setActivities(mockActivities);
-      setReports(mockRecentReports);
-      setWeeklyData(mockWeeklyData);
-      setLoading(false);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('http://localhost:5000/api/student/dashboard/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add authentication token if needed
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+          credentials: 'include' // Include cookies if using session-based auth
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch dashboard data: ${response.status}`);
+        }
+
+        const responseData: ApiResponse = await response.json();
+        
+        // Check if the response is successful and has data
+        if (!responseData.success || !responseData.data) {
+          throw new Error('Invalid API response structure');
+        }
+        
+        const data = responseData.data;
+        
+        // Default stats to always show essential cards
+        const defaultStats: StatCardData[] = [
+          {
+            title: 'Total Reports',
+            value: 0,
+            icon: <FileText size={24} />,
+            trend: 0,
+            color: '#3b82f6'
+          },
+          {
+            title: 'Active Students',
+            value: 0,
+            icon: <Users size={24} />,
+            trend: 0,
+            color: '#10b981'
+          }
+        ];
+        
+        // Transform the data to match frontend expectations with null checks
+        const transformedStats = (data.stats || []).map(stat => ({
+          ...stat,
+          icon: iconMap[stat.icon as keyof typeof iconMap] || <FileText size={24} />
+        }));
+
+        // Ensure essential stats are always shown, use API data if available, otherwise use defaults
+        setStats(transformedStats.length > 0 ? transformedStats : defaultStats);
+        setActivities(data.recentActivity || []);
+        setReports(data.recentReports || []);
+        setWeeklyData(data.weeklyData || [
+          { day: 'Mon', count: 0 },
+          { day: 'Tue', count: 0 },
+          { day: 'Wed', count: 0 },
+          { day: 'Thu', count: 0 },
+          { day: 'Fri', count: 0 },
+          { day: 'Sat', count: 0 },
+          { day: 'Sun', count: 0 }
+        ]);
+        
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+        
+        // Fallback to mock data in case of error (optional)
+        setStats([
+          {
+            title: 'Total Reports',
+            value: 0,
+            icon: <FileText size={24} />,
+            trend: 0,
+            color: '#3b82f6'
+          },
+          {
+            title: 'Active Students',
+            value: 0,
+            icon: <Users size={24} />,
+            trend: 0,
+            color: '#10b981'
+          }
+        ]);
+        setActivities([]);
+        setReports([]);
+        setWeeklyData([
+          { day: 'Mon', count: 0 },
+          { day: 'Tue', count: 0 },
+          { day: 'Wed', count: 0 },
+          { day: 'Thu', count: 0 },
+          { day: 'Fri', count: 0 },
+          { day: 'Sat', count: 0 },
+          { day: 'Sun', count: 0 }
+        ]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchData();
+    fetchDashboardData();
   }, []);
+
+  // Calculate max value for chart scaling
+  const maxChartValue = Math.max(...(weeklyData || []).map(data => data.count), 1);
 
   return (
     <StudentLayout>
@@ -180,12 +241,20 @@ const DashboardPage = () => {
         </p>
       </div>
 
+      {/* ERROR MESSAGE */}
+      {error && (
+        <div className="error-banner fade-in">
+          <AlertCircle size={20} />
+          <span>{error}</span>
+        </div>
+      )}
+
       {/* STATISTICS CARDS */}
       <div className="stats-grid">
         {loading ? (
           // Loading skeletons
           <>
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2].map((i) => (
               <div key={i} className="stat-card skeleton-card">
                 <div className="skeleton skeleton-icon"></div>
                 <div className="skeleton skeleton-text"></div>
@@ -194,7 +263,7 @@ const DashboardPage = () => {
             ))}
           </>
         ) : (
-          stats.map((stat, index) => (
+          (stats || []).map((stat, index) => (
             <div 
               key={index} 
               className="stat-card fade-in"
@@ -243,7 +312,7 @@ const DashboardPage = () => {
                       <div 
                         className="chart-bar slide-up"
                         style={{ 
-                          height: `${(data.count / 25) * 100}%`,
+                          height: `${(data.count / maxChartValue) * 100}%`,
                           animationDelay: `${0.5 + index * 0.1}s`
                         }}
                       >
@@ -273,7 +342,7 @@ const DashboardPage = () => {
                   <div key={i} className="skeleton skeleton-activity"></div>
                 ))}
               </div>
-            ) : (
+            ) : activities.length > 0 ? (
               <div className="activity-list">
                 {activities.map((activity, index) => (
                   <div 
@@ -285,6 +354,7 @@ const DashboardPage = () => {
                       {activity.type === 'submitted' && <FileText size={16} />}
                       {activity.type === 'approved' && <CheckCircle size={16} />}
                       {activity.type === 'pending' && <AlertCircle size={16} />}
+                      {activity.type === 'rejected' && <AlertCircle size={16} />}
                     </div>
                     <div className="activity-content">
                       <p className="activity-title">{activity.title}</p>
@@ -295,6 +365,11 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="empty-state">
+                <FileText size={48} />
+                <p>No recent activity</p>
               </div>
             )}
           </div>
@@ -351,7 +426,7 @@ const DashboardPage = () => {
                   <div key={i} className="skeleton skeleton-report"></div>
                 ))}
               </div>
-            ) : (
+            ) : reports.length > 0 ? (
               <div className="reports-list">
                 {reports.map((report, index) => (
                   <div 
@@ -369,6 +444,11 @@ const DashboardPage = () => {
                   </div>
                 ))}
               </div>
+            ) : (
+              <div className="empty-state">
+                <FileText size={48} />
+                <p>No reports yet</p>
+              </div>
             )}
           </div>
         </div>
@@ -378,4 +458,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-

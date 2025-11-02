@@ -12,11 +12,12 @@
  * - Account actions (logout)
  * - Student statistics
  * - Smooth animations
+ * - API integration with localhost:5000
  */
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StudentLayout from '../components/StudentLayout';
 import { 
   User, 
@@ -34,7 +35,9 @@ import {
   Award,
   BookOpen,
   FileText,
-  Shield
+  Shield,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 import LogoutConfirmation from '@/components/LogoutConfirmation';
 import { useLogout } from '@/hooks/useLogout';
@@ -52,6 +55,7 @@ interface StudentData {
   enrollmentDate: string;
   address: string;
   dateOfBirth: string;
+  studentRole: string;
 }
 
 interface PasswordData {
@@ -60,24 +64,17 @@ interface PasswordData {
   confirmPassword: string;
 }
 
-// MOCK STUDENT DATA
-const initialStudentData: StudentData = {
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john.doe@student.edu',
-  phone: '+1 (555) 123-4567',
-  studentId: 'STU-2024-001',
-  class: 'Computer Science - Year 3',
-  department: 'Engineering',
-  enrollmentDate: 'September 2022',
-  address: '123 University Ave, Campus City, ST 12345',
-  dateOfBirth: '2003-05-15'
-};
+interface StatItem {
+  label: string;
+  value: string;
+  icon: string;
+  color: string;
+}
 
 const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [studentData, setStudentData] = useState<StudentData>(initialStudentData);
-  const [editData, setEditData] = useState<StudentData>(initialStudentData);
+  const [studentData, setStudentData] = useState<StudentData | null>(null);
+  const [editData, setEditData] = useState<StudentData | null>(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState<PasswordData>({
     currentPassword: '',
@@ -85,16 +82,78 @@ const ProfilePage = () => {
     confirmPassword: ''
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [stats, setStats] = useState<StatItem[]>([]);
   const { logout, isLoggingOut } = useLogout();
 
-  // Statistics
-  const stats = [
-    { label: 'Reports Submitted', value: '24', icon: <FileText size={20} />, color: '#3b82f6' },
-    { label: 'Courses Enrolled', value: '8', icon: <BookOpen size={20} />, color: '#10b981' },
-    { label: 'GPA', value: '3.85', icon: <Award size={20} />, color: '#f59e0b' },
-    { label: 'Attendance', value: '95%', icon: <Shield size={20} />, color: '#8b5cf6' }
-  ];
+  // Get current user ID - Replace with your actual auth context
+  const getCurrentUserId = () => {
+    // TODO: Replace with actual user ID from your authentication system
+    return localStorage.getItem('studentEmail') || 'current-user-id';
+  };
+
+  // Fetch student profile from API
+  const fetchStudentProfile = async () => {
+    setIsLoading(true);
+    try {
+      const userId = getCurrentUserId();
+      // const response = await fetch(`http://localhost:5000/api/student/dashboard/getProfile?email=${userId}`);
+      const response = await fetch(`http://localhost:5000/api/student/dashboard/maserati?email=${userId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch profile ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setStudentData(result.data);
+        setEditData(result.data);
+        
+        // Transform statistics for frontend display
+        const transformedStats = result.data.statistics.map((stat: StatItem) => ({
+          ...stat,
+          icon: getIconComponent(stat.icon)
+        }));
+        setStats(transformedStats);
+      } else {
+        console.error('Failed to fetch profile:', result.message);
+        // Fallback to empty state or show error
+      }
+    } catch (error) {
+      console.error('Error fetching student profile:', error);
+      // You can set a fallback state here if needed
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to get icon component
+  const getIconComponent = (iconName: string) => {
+    const iconProps = { size: 20 };
+    switch (iconName) {
+      case 'FileText':
+        return <FileText {...iconProps} />;
+      case 'CheckCircle':
+        return <CheckCircle {...iconProps} />;
+      case 'Clock':
+        return <Clock {...iconProps} />;
+      case 'Award':
+        return <Award {...iconProps} />;
+      case 'BookOpen':
+        return <BookOpen {...iconProps} />;
+      case 'Shield':
+        return <Shield {...iconProps} />;
+      default:
+        return <Award {...iconProps} />;
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchStudentProfile();
+  }, []);
 
   // Handle edit mode toggle
   const handleEditToggle = () => {
@@ -106,7 +165,9 @@ const ProfilePage = () => {
 
   // Handle input changes
   const handleInputChange = (field: keyof StudentData, value: string) => {
-    setEditData({ ...editData, [field]: value });
+    if (editData) {
+      setEditData({ ...editData, [field]: value });
+    }
   };
 
   // Handle password input changes
@@ -116,17 +177,48 @@ const ProfilePage = () => {
 
   // Save profile changes
   const handleSave = async () => {
+    if (!editData) return;
+    
     setIsSaving(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setStudentData(editData);
-    setIsEditing(false);
-    setIsSaving(false);
-    
-    // Show success message (you can add a toast notification here)
-    alert('Profile updated successfully!');
+    try {
+      const userId = getCurrentUserId();
+      const response = await fetch('http://localhost:5000/api/student/update-profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          updates: {
+            name: `${editData.firstName} ${editData.lastName}`,
+            email: editData.email,
+            phone: editData.phone,
+            address: editData.address,
+            // Add other fields as needed
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setStudentData(editData);
+        setIsEditing(false);
+        alert('Profile updated successfully!');
+      } else {
+        alert('Failed to update profile: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Error updating profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Handle password change
@@ -143,14 +235,35 @@ const ProfilePage = () => {
 
     setIsSaving(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setIsSaving(false);
-    setIsChangingPassword(false);
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    
-    alert('Password changed successfully!');
+    try {
+      const userId = getCurrentUserId();
+      const response = await fetch('http://localhost:5000/api/student/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setIsChangingPassword(false);
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        alert('Password changed successfully!');
+      } else {
+        alert('Failed to change password: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      alert('Error changing password. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Handle logout click
@@ -163,6 +276,76 @@ const ProfilePage = () => {
     await logout();
     setShowLogoutPopup(false);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <StudentLayout>
+        <div className="page-header" style={{ marginBottom: '2rem' }}>
+          <h1 style={{ 
+            fontSize: '2rem', 
+            fontWeight: '700', 
+            color: '#1a202c',
+            margin: 0 
+          }}>
+            My Profile
+          </h1>
+          <p style={{ 
+            color: '#718096', 
+            marginTop: '0.5rem',
+            fontSize: '0.95rem' 
+          }}>
+            Loading your profile...
+          </p>
+        </div>
+        
+        <div className="profile-container">
+          {/* Loading skeletons */}
+          <div className="profile-left">
+            <div className="profile-card skeleton-card">
+              <div className="skeleton skeleton-avatar"></div>
+              <div className="skeleton skeleton-title"></div>
+              <div className="skeleton skeleton-text"></div>
+            </div>
+          </div>
+          <div className="profile-right">
+            <div className="info-card skeleton-card">
+              <div className="skeleton skeleton-title"></div>
+              <div className="skeleton skeleton-text"></div>
+              <div className="skeleton skeleton-text"></div>
+            </div>
+          </div>
+        </div>
+      </StudentLayout>
+    );
+  }
+
+  // Error state - no data loaded
+  if (!studentData) {
+    return (
+      <StudentLayout>
+        <div className="page-header" style={{ marginBottom: '2rem' }}>
+          <h1 style={{ 
+            fontSize: '2rem', 
+            fontWeight: '700', 
+            color: '#1a202c',
+            margin: 0 
+          }}>
+            My Profile
+          </h1>
+        </div>
+        
+        <div className="error-state">
+          <User size={64} />
+          <h3>Unable to load profile</h3>
+          <p>There was an error loading your profile information.</p>
+          <button onClick={fetchStudentProfile} className="btn-retry">
+            Try Again
+          </button>
+        </div>
+      </StudentLayout>
+    );
+  }
 
   return (
     <StudentLayout>
@@ -204,6 +387,7 @@ const ProfilePage = () => {
                 <h2 className="profile-name">{studentData.firstName} {studentData.lastName}</h2>
                 <p className="profile-id">{studentData.studentId}</p>
                 <p className="profile-department">{studentData.department}</p>
+                <p className="profile-role">Role: {studentData.studentRole}</p>
               </div>
             </div>
 
@@ -266,7 +450,7 @@ const ProfilePage = () => {
                   <input
                     type="text"
                     className="info-input"
-                    value={editData.firstName}
+                    value={editData?.firstName || ''}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                   />
                 ) : (
@@ -284,7 +468,7 @@ const ProfilePage = () => {
                   <input
                     type="text"
                     className="info-input"
-                    value={editData.lastName}
+                    value={editData?.lastName || ''}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                   />
                 ) : (
@@ -302,7 +486,7 @@ const ProfilePage = () => {
                   <input
                     type="email"
                     className="info-input"
-                    value={editData.email}
+                    value={editData?.email || ''}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                   />
                 ) : (
@@ -320,7 +504,7 @@ const ProfilePage = () => {
                   <input
                     type="tel"
                     className="info-input"
-                    value={editData.phone}
+                    value={editData?.phone || ''}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                   />
                 ) : (
@@ -335,20 +519,13 @@ const ProfilePage = () => {
                   Class
                 </label>
                 {isEditing ? (
-                  <select
+                  <input
+                    type="text"
                     className="info-input"
-                    value={editData.class}
+                    value={editData?.class || ''}
                     onChange={(e) => handleInputChange('class', e.target.value)}
-                  >
-                    <option>Computer Science - Year 1</option>
-                    <option>Computer Science - Year 2</option>
-                    <option>Computer Science - Year 3</option>
-                    <option>Computer Science - Year 4</option>
-                    <option>Engineering - Year 1</option>
-                    <option>Engineering - Year 2</option>
-                    <option>Engineering - Year 3</option>
-                    <option>Engineering - Year 4</option>
-                  </select>
+                    placeholder="Enter your class"
+                  />
                 ) : (
                   <div className="info-value">{studentData.class}</div>
                 )}
@@ -364,11 +541,17 @@ const ProfilePage = () => {
                   <input
                     type="date"
                     className="info-input"
-                    value={editData.dateOfBirth}
+                    value={editData?.dateOfBirth || ''}
                     onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                   />
                 ) : (
-                  <div className="info-value">{new Date(studentData.dateOfBirth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                  <div className="info-value">
+                    {new Date(studentData.dateOfBirth).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </div>
                 )}
               </div>
 
@@ -399,9 +582,10 @@ const ProfilePage = () => {
                 {isEditing ? (
                   <textarea
                     className="info-input info-textarea"
-                    value={editData.address}
+                    value={editData?.address || ''}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     rows={2}
+                    placeholder="Enter your address"
                   />
                 ) : (
                   <div className="info-value">{studentData.address}</div>
@@ -500,4 +684,3 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage;
-

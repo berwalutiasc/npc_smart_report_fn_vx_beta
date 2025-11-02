@@ -1,12 +1,12 @@
 /**
  * SUBMIT REPORT PAGE
- * 
+ *
  * This page allows students to submit inspection reports.
- * 
+ *
  * LOCATION: /student/submit
- * 
+ *
  * FEATURES:
- * - Form with all inspection items
+ * - Fetch all inspection items from the backend API
  * - Mark items as Good, Bad, or Flagged
  * - Add comments to each item
  * - Mark All Good button
@@ -18,193 +18,213 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import StudentLayout from '../components/StudentLayout';
-import { 
-  CheckCircle, 
-  XCircle, 
+import React, { useState, useEffect } from "react";
+import StudentLayout from "../components/StudentLayout";
+import {
+  CheckCircle,
+  XCircle,
   AlertTriangle,
   Send,
   RotateCcw,
   Lightbulb,
   TrendingUp,
-  Info
-} from 'lucide-react';
-import './submit.css';
+  Info,
+} from "lucide-react";
+import "./submit.css";
 
 // TYPES
 interface InspectionItem {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  status: 'good' | 'bad' | 'flagged' | 'pending';
+  status: "good" | "bad" | "flagged" | "pending";
   comment: string;
 }
 
-// INSPECTION ITEMS TEMPLATE
-const inspectionItemsTemplate: InspectionItem[] = [
-  {
-    id: 1,
-    name: 'Fire Extinguisher',
-    description: 'Check if fire extinguisher is accessible and not expired',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 2,
-    name: 'Emergency Exit Signs',
-    description: 'Verify all emergency exit signs are illuminated',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 3,
-    name: 'Window Glass',
-    description: 'Inspect all windows for cracks or damage',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 4,
-    name: 'Floor Condition',
-    description: 'Check for spills, cracks, or trip hazards',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 5,
-    name: 'Electrical Outlets',
-    description: 'Ensure all outlets are functioning and properly covered',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 6,
-    name: 'First Aid Kit',
-    description: 'Verify first aid kit is stocked and accessible',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 7,
-    name: 'Chemical Storage',
-    description: 'Check proper labeling and storage of chemicals',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 8,
-    name: 'Ventilation System',
-    description: 'Ensure ventilation is working properly',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 9,
-    name: 'Safety Equipment',
-    description: 'Check availability of safety goggles, gloves, etc.',
-    status: 'pending',
-    comment: ''
-  },
-  {
-    id: 10,
-    name: 'Lighting',
-    description: 'Verify all lights are functioning',
-    status: 'pending',
-    comment: ''
-  }
-];
-
 const SubmitPage = () => {
-  const [items, setItems] = useState<InspectionItem[]>(inspectionItemsTemplate);
+  const [items, setItems] = useState<InspectionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Calculate statistics
+  /**
+   * FETCH INSPECTION ITEMS FROM BACKEND
+   */
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/item/getAllItems");
+        const data = await res.json();
+
+        if (data.success && Array.isArray(data.items)) {
+          const fetchedItems = data.items.map((item: any, index: number) => ({
+            id: item.id,
+            name: item.name,
+            description: item.description || "No description provided.",
+            status: "pending",
+            comment: "",
+          }));
+          setItems(fetchedItems);
+        } else {
+          console.error("Failed to fetch items:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching inspection items:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchItems();
+  }, []);
+
+  /**
+   * CALCULATE STATISTICS
+   */
   const stats = items.reduce((acc, item) => {
     acc[item.status] = (acc[item.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  // Handle status change
-  const handleStatusChange = (itemId: number, status: 'good' | 'bad' | 'flagged') => {
-    setItems(items.map(item => 
-      item.id === itemId ? { ...item, status } : item
-    ));
+  /**
+   * HANDLE STATUS CHANGE
+   */
+  const handleStatusChange = (
+    itemId: string,
+    status: "good" | "bad" | "flagged"
+  ) => {
+    setItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, status } : item))
+    );
   };
 
-  // Handle comment change
-  const handleCommentChange = (itemId: number, comment: string) => {
-    setItems(items.map(item => 
-      item.id === itemId ? { ...item, comment } : item
-    ));
+  /**
+   * HANDLE COMMENT CHANGE
+   */
+  const handleCommentChange = (itemId: string, comment: string) => {
+    setItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, comment } : item))
+    );
   };
 
-  // Mark all as good
+  /**
+   * MARK ALL ITEMS AS GOOD
+   */
   const handleMarkAllGood = () => {
-    setItems(items.map(item => ({ ...item, status: 'good' })));
+    setItems((prev) => prev.map((item) => ({ ...item, status: "good" })));
   };
 
-  // Clear all selections
+  /**
+   * CLEAR SELECTION
+   */
   const handleClearSelection = () => {
-    setItems(items.map(item => ({ ...item, status: 'pending', comment: '' })));
+    setItems((prev) =>
+      prev.map((item) => ({ ...item, status: "pending", comment: "" }))
+    );
   };
 
-  // Submit report
+  /**
+   * SUBMIT REPORT TO BACKEND
+   */
   const handleSubmit = async () => {
-    // Check if all items are marked
-    const hasUnmarked = items.some(item => item.status === 'pending');
+    const hasUnmarked = items.some((item) => item.status === "pending");
     if (hasUnmarked) {
-      alert('Please mark all items before submitting!');
+      alert("Please mark all items before submitting!");
       return;
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setShowSuccess(true);
+    try {
+      const reporterId = localStorage.getItem("userId");
+      const classId = localStorage.getItem("classId");
 
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setShowSuccess(false);
-      setItems(inspectionItemsTemplate);
-    }, 3000);
+      const response = await fetch("http://localhost:5000/api/student/report/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reporterId,
+          classId,
+          title: "Classroom Inspection Report",
+          generalComment: "Inspection completed successfully.",
+          itemEvaluated: items,
+          category: "ONTIME",
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setItems(
+            items.map((item) => ({
+              ...item,
+              status: "pending",
+              comment: "",
+            }))
+          );
+        }, 3000);
+      } else {
+        alert(data.message || "Failed to submit report.");
+      }
+    } catch (err) {
+      console.error("Error submitting report:", err);
+      alert("An error occurred while submitting your report.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Get status icon
+  /**
+   * RENDER STATUS ICON
+   */
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'good':
+      case "good":
         return <CheckCircle size={20} />;
-      case 'bad':
+      case "bad":
         return <XCircle size={20} />;
-      case 'flagged':
+      case "flagged":
         return <AlertTriangle size={20} />;
       default:
         return null;
     }
   };
 
+  /**
+   * RENDER PAGE
+   */
+  if (isLoading) {
+    return (
+      <StudentLayout>
+        <div className="loading-screen">
+          <p>Loading inspection items...</p>
+        </div>
+      </StudentLayout>
+    );
+  }
+
   return (
     <StudentLayout>
       {/* PAGE HEADER */}
-      <div className="page-header" style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          fontSize: '2rem', 
-          fontWeight: '700', 
-          color: '#1a202c',
-          margin: 0 
-        }}>
+      <div className="page-header" style={{ marginBottom: "2rem" }}>
+        <h1
+          style={{
+            fontSize: "2rem",
+            fontWeight: "700",
+            color: "#1a202c",
+            margin: 0,
+          }}
+        >
           Submit Report
         </h1>
-        <p style={{ 
-          color: '#718096', 
-          marginTop: '0.5rem',
-          fontSize: '0.95rem' 
-        }}>
+        <p
+          style={{
+            color: "#718096",
+            marginTop: "0.5rem",
+            fontSize: "0.95rem",
+          }}
+        >
           Complete the inspection checklist and submit your report
         </p>
       </div>
@@ -245,7 +265,7 @@ const SubmitPage = () => {
               >
                 <div className="form-item-header">
                   <div className="form-item-title">
-                    <span className="item-number">{item.id}</span>
+                    <span className="item-number">{index + 1}</span>
                     <div>
                       <h4>{item.name}</h4>
                       <p>{item.description}</p>
@@ -257,22 +277,28 @@ const SubmitPage = () => {
                   {/* STATUS BUTTONS */}
                   <div className="status-buttons">
                     <button
-                      className={`status-btn good ${item.status === 'good' ? 'active' : ''}`}
-                      onClick={() => handleStatusChange(item.id, 'good')}
+                      className={`status-btn good ${
+                        item.status === "good" ? "active" : ""
+                      }`}
+                      onClick={() => handleStatusChange(item.id, "good")}
                     >
                       <CheckCircle size={18} />
                       Good
                     </button>
                     <button
-                      className={`status-btn bad ${item.status === 'bad' ? 'active' : ''}`}
-                      onClick={() => handleStatusChange(item.id, 'bad')}
+                      className={`status-btn bad ${
+                        item.status === "bad" ? "active" : ""
+                      }`}
+                      onClick={() => handleStatusChange(item.id, "bad")}
                     >
                       <XCircle size={18} />
                       Bad
                     </button>
                     <button
-                      className={`status-btn flagged ${item.status === 'flagged' ? 'active' : ''}`}
-                      onClick={() => handleStatusChange(item.id, 'flagged')}
+                      className={`status-btn flagged ${
+                        item.status === "flagged" ? "active" : ""
+                      }`}
+                      onClick={() => handleStatusChange(item.id, "flagged")}
                     >
                       <AlertTriangle size={18} />
                       Flagged
@@ -281,11 +307,18 @@ const SubmitPage = () => {
 
                   {/* COMMENT FIELD */}
                   <div className="comment-field">
-                    <label>Comment / Notes {item.status !== 'good' && <span className="required">*</span>}</label>
+                    <label>
+                      Comment / Notes{" "}
+                      {item.status !== "good" && (
+                        <span className="required">*</span>
+                      )}
+                    </label>
                     <textarea
                       placeholder="Add your observations or notes here..."
                       value={item.comment}
-                      onChange={(e) => handleCommentChange(item.id, e.target.value)}
+                      onChange={(e) =>
+                        handleCommentChange(item.id, e.target.value)
+                      }
                       rows={2}
                     />
                   </div>
@@ -297,19 +330,22 @@ const SubmitPage = () => {
           {/* SUBMIT BUTTON */}
           <button
             className="btn-submit-report fade-in"
-            style={{ animationDelay: '0.6s' }}
+            style={{ animationDelay: "0.6s" }}
             onClick={handleSubmit}
             disabled={isSubmitting}
           >
             <Send size={20} />
-            {isSubmitting ? 'Submitting Report...' : 'Submit Report'}
+            {isSubmitting ? "Submitting Report..." : "Submit Report"}
           </button>
         </div>
 
         {/* RIGHT COLUMN - TIPS & STATS */}
         <div className="submit-right">
           {/* QUICK TIPS */}
-          <div className="tips-card fade-in" style={{ animationDelay: '0.2s' }}>
+          <div
+            className="tips-card fade-in"
+            style={{ animationDelay: "0.2s" }}
+          >
             <div className="tips-header">
               <Lightbulb size={20} />
               <h3>Quick Tips</h3>
@@ -321,7 +357,10 @@ const SubmitPage = () => {
                 </div>
                 <div className="tip-content">
                   <h4>Good</h4>
-                  <p>Item is in excellent condition, functioning properly, and meets all safety standards.</p>
+                  <p>
+                    Item is in excellent condition, functioning properly, and
+                    meets all safety standards.
+                  </p>
                 </div>
               </div>
 
@@ -331,7 +370,10 @@ const SubmitPage = () => {
                 </div>
                 <div className="tip-content">
                   <h4>Bad</h4>
-                  <p>Item is broken, missing, or poses a safety hazard. Requires immediate attention.</p>
+                  <p>
+                    Item is broken, missing, or poses a safety hazard. Requires
+                    immediate attention.
+                  </p>
                 </div>
               </div>
 
@@ -341,19 +383,28 @@ const SubmitPage = () => {
                 </div>
                 <div className="tip-content">
                   <h4>Flagged</h4>
-                  <p>Item needs attention or minor repairs. Not critical but should be addressed soon.</p>
+                  <p>
+                    Item needs attention or minor repairs. Not critical but
+                    should be addressed soon.
+                  </p>
                 </div>
               </div>
 
               <div className="tip-note">
                 <Info size={16} />
-                <p>Always add comments for Bad and Flagged items to provide context.</p>
+                <p>
+                  Always add comments for Bad and Flagged items to provide
+                  context.
+                </p>
               </div>
             </div>
           </div>
 
           {/* STATISTICS */}
-          <div className="stats-card fade-in" style={{ animationDelay: '0.3s' }}>
+          <div
+            className="stats-card fade-in"
+            style={{ animationDelay: "0.3s" }}
+          >
             <div className="stats-header">
               <TrendingUp size={20} />
               <h3>Submission Stats</h3>
@@ -395,13 +446,23 @@ const SubmitPage = () => {
                 <div className="progress-label">
                   <span>Completion Progress</span>
                   <span className="progress-percentage">
-                    {Math.round(((10 - (stats.pending || 0)) / 10) * 100)}%
+                    {Math.round(
+                      ((items.length - (stats.pending || 0)) / items.length) *
+                        100
+                    )}
+                    %
                   </span>
                 </div>
                 <div className="progress-track">
-                  <div 
+                  <div
                     className="progress-fill"
-                    style={{ width: `${((10 - (stats.pending || 0)) / 10) * 100}%` }}
+                    style={{
+                      width: `${
+                        ((items.length - (stats.pending || 0)) /
+                          items.length) *
+                        100
+                      }%`,
+                    }}
                   />
                 </div>
               </div>
@@ -414,4 +475,3 @@ const SubmitPage = () => {
 };
 
 export default SubmitPage;
-

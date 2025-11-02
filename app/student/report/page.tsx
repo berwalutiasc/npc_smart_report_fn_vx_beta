@@ -1,19 +1,3 @@
-/**
- * STUDENT REPORT PAGE
- * 
- * This page allows students to view and manage their reports.
- * 
- * LOCATION: /student/report
- * 
- * FEATURES:
- * - Filter reports by time period (daily, weekly, monthly)
- * - View list of reports with status
- * - CS Approved and CP Approved status indicators
- * - View and Download buttons for each report
- * - Responsive design
- * - Loading animations
- */
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -27,157 +11,152 @@ import {
   Clock,
   Search,
   Calendar,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import './report.css';
 
 // TYPES
 interface Report {
-  id: number;
+  id: string; // Changed from number to string to match UUID from database
   name: string;
   submissionDate: string;
   csApproved: boolean;
   cpApproved: boolean;
   status: 'pending' | 'approved' | 'rejected';
+  class: string;
+  generalComment?: string;
+  itemEvaluated?: any;
 }
 
 type FilterType = 'all' | 'daily' | 'weekly' | 'monthly';
 
-// MOCK DATA
-const mockReports: Report[] = [
-  {
-    id: 1,
-    name: 'Weekly Progress Report - Week 43',
-    submissionDate: '2024-10-30',
-    csApproved: true,
-    cpApproved: true,
-    status: 'approved'
-  },
-  {
-    id: 2,
-    name: 'Lab Safety Inspection Report',
-    submissionDate: '2024-10-29',
-    csApproved: true,
-    cpApproved: false,
-    status: 'pending'
-  },
-  {
-    id: 3,
-    name: 'Chemistry Lab Equipment Check',
-    submissionDate: '2024-10-28',
-    csApproved: true,
-    cpApproved: true,
-    status: 'approved'
-  },
-  {
-    id: 4,
-    name: 'Monthly Facility Report - October',
-    submissionDate: '2024-10-25',
-    csApproved: false,
-    cpApproved: false,
-    status: 'rejected'
-  },
-  {
-    id: 5,
-    name: 'Daily Inspection Report - Building A',
-    submissionDate: '2024-10-24',
-    csApproved: true,
-    cpApproved: true,
-    status: 'approved'
-  },
-  {
-    id: 6,
-    name: 'Weekly Safety Audit - Week 42',
-    submissionDate: '2024-10-23',
-    csApproved: true,
-    cpApproved: false,
-    status: 'pending'
-  },
-  {
-    id: 7,
-    name: 'Equipment Maintenance Report',
-    submissionDate: '2024-10-22',
-    csApproved: true,
-    cpApproved: true,
-    status: 'approved'
-  },
-  {
-    id: 8,
-    name: 'Daily Inspection Report - Building B',
-    submissionDate: '2024-10-21',
-    csApproved: false,
-    cpApproved: true,
-    status: 'pending'
-  }
-];
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalReports: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
 
 const ReportPage = () => {
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<Report[]>([]);
-  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalReports: 0,
+    hasNext: false,
+    hasPrev: false
+  });
 
-  // Simulate API call
-  useEffect(() => {
-    const fetchReports = async () => {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      setReports(mockReports);
-      setFilteredReports(mockReports);
+  // Get current user ID - This will work with the actual API
+  // In a real app, you'd get this from your auth context or session
+  const getCurrentUserId = () => {
+    // TODO: Replace with actual user ID from your authentication system
+    // Example: return localStorage.getItem('userId');
+    // Example: return userContext.userId;
+    return 'current-user-id'; // This should be dynamic in production
+  };
+
+  // Fetch reports from API - This will work with the created API
+  const fetchReports = async (filter: FilterType = activeFilter, search: string = searchQuery, page: number = 1) => {
+    setLoading(true);
+    
+    try {
+      const userId = getCurrentUserId();
+      const params = new URLSearchParams({
+        userId,
+        filter,
+        search,
+        page: page.toString(),
+        limit: '10'
+      });
+
+      // This will call the actual API endpoint we created
+      const response = await fetch(`/api/reports/get-reports?${params}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports');
+      }
+      
+      const result = await response.json();
+
+      if (result.success) {
+        setReports(result.data.reports);
+        setPagination(result.data.pagination);
+      } else {
+        console.error('Failed to fetch reports:', result.message);
+        setReports([]);
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      // Fallback to empty array if API fails
+      setReports([]);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
+  // Initial load - This will use the real API
+  useEffect(() => {
     fetchReports();
   }, []);
 
-  // Filter reports by time period
+  // Handle filter change - This will use the real API
   useEffect(() => {
-    let filtered = [...reports];
+    fetchReports(activeFilter, searchQuery, 1);
+  }, [activeFilter]);
 
-    // Apply time filter
-    if (activeFilter !== 'all') {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // Handle search with debounce - This will use the real API
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchReports(activeFilter, searchQuery, 1);
+    }, 500);
 
-      filtered = filtered.filter(report => {
-        const reportDate = new Date(report.submissionDate);
-        const diffTime = today.getTime() - reportDate.getTime();
-        const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
-        if (activeFilter === 'daily') return diffDays <= 1;
-        if (activeFilter === 'weekly') return diffDays <= 7;
-        if (activeFilter === 'monthly') return diffDays <= 30;
-        return true;
-      });
-    }
-
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(report =>
-        report.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredReports(filtered);
-  }, [activeFilter, searchQuery, reports]);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   // Handle view report
-  const handleView = (reportId: number) => {
+  const handleView = (reportId: string) => {
     console.log('Viewing report:', reportId);
-    // Navigate to report detail page or open modal
+    // TODO: Navigate to report detail page or open modal
+    // Example: router.push(`/student/report/${reportId}`);
+    // Example: openModal(reportId);
   };
 
   // Handle download report
-  const handleDownload = async (reportId: number) => {
+  const handleDownload = async (reportId: string) => {
     setDownloadingId(reportId);
     
-    // Simulate download
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setDownloadingId(null);
-    alert(`Report ${reportId} downloaded successfully!`);
+    try {
+      // TODO: Implement actual download logic with the API
+      // This would call a separate download endpoint
+      // const response = await fetch(`/api/reports/download/${reportId}`);
+      // const blob = await response.blob();
+      // ... download logic
+      
+      // Simulate download for now
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      alert(`Report ${reportId} downloaded successfully!`);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Download failed. Please try again.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  // Handle pagination - This will use the real API
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      fetchReports(activeFilter, searchQuery, newPage);
+    }
   };
 
   return (
@@ -197,16 +176,18 @@ const ReportPage = () => {
           marginTop: '0.5rem',
           fontSize: '0.95rem' 
         }}>
-          View and manage your submitted reports
+          {/* This will show real count from API */}
+          View and manage your submitted reports {pagination.totalReports > 0 && `(${pagination.totalReports} total)`}
         </p>
       </div>
 
-      {/* FILTERS AND SEARCH */}
+      {/* FILTERS AND SEARCH - These will work with real API filtering */}
       <div className="report-controls fade-in">
         <div className="filter-buttons">
           <button
             className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
             onClick={() => setActiveFilter('all')}
+            disabled={loading}
           >
             <Filter size={16} />
             All Reports
@@ -214,6 +195,7 @@ const ReportPage = () => {
           <button
             className={`filter-btn ${activeFilter === 'daily' ? 'active' : ''}`}
             onClick={() => setActiveFilter('daily')}
+            disabled={loading}
           >
             <Calendar size={16} />
             Daily
@@ -221,6 +203,7 @@ const ReportPage = () => {
           <button
             className={`filter-btn ${activeFilter === 'weekly' ? 'active' : ''}`}
             onClick={() => setActiveFilter('weekly')}
+            disabled={loading}
           >
             <Calendar size={16} />
             Weekly
@@ -228,6 +211,7 @@ const ReportPage = () => {
           <button
             className={`filter-btn ${activeFilter === 'monthly' ? 'active' : ''}`}
             onClick={() => setActiveFilter('monthly')}
+            disabled={loading}
           >
             <Calendar size={16} />
             Monthly
@@ -238,18 +222,19 @@ const ReportPage = () => {
           <Search size={18} />
           <input
             type="text"
-            placeholder="Search reports..."
+            placeholder="Search reports by title or comment..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
+            disabled={loading}
           />
         </div>
       </div>
 
-      {/* REPORTS LIST */}
+      {/* REPORTS LIST - This will display real data from API */}
       <div className="reports-container">
         {loading ? (
-          // Loading skeletons
+          // Loading skeletons - shown while fetching from API
           <div className="reports-list">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="report-card skeleton-card">
@@ -259,8 +244,8 @@ const ReportPage = () => {
               </div>
             ))}
           </div>
-        ) : filteredReports.length === 0 ? (
-          // Empty state
+        ) : reports.length === 0 ? (
+          // Empty state - shown when no reports found
           <div className="empty-state fade-in">
             <FileText size={64} strokeWidth={1.5} />
             <h3>No reports found</h3>
@@ -271,77 +256,123 @@ const ReportPage = () => {
             </p>
           </div>
         ) : (
-          // Reports list
-          <div className="reports-list">
-            {filteredReports.map((report, index) => (
-              <div
-                key={report.id}
-                className="report-card slide-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="report-card-header">
-                  <div className="report-info">
-                    <h3 className="report-name">{report.name}</h3>
-                    <div className="report-meta">
-                      <Calendar size={14} />
-                      <span>Submitted: {new Date(report.submissionDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}</span>
-                    </div>
-                  </div>
-                  
-                  <div className={`report-status status-${report.status}`}>
-                    {report.status === 'approved' && <CheckCircle size={16} />}
-                    {report.status === 'pending' && <Clock size={16} />}
-                    {report.status === 'rejected' && <XCircle size={16} />}
-                    {report.status}
-                  </div>
-                </div>
-
-                <div className="report-card-body">
-                  <div className="approval-badges">
-                    <div className={`approval-badge ${report.csApproved ? 'approved' : 'pending'}`}>
-                      {report.csApproved ? (
-                        <CheckCircle size={16} />
-                      ) : (
-                        <Clock size={16} />
-                      )}
-                      <span>CS {report.csApproved ? 'Approved' : 'Pending'}</span>
+          // Reports list - populated with real data from API
+          <>
+            <div className="reports-list">
+              {reports.map((report, index) => (
+                <div
+                  key={report.id}
+                  className="report-card slide-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="report-card-header">
+                    <div className="report-info">
+                      <h3 className="report-name">{report.name}</h3>
+                      <div className="report-meta">
+                        <Calendar size={14} />
+                        <span>
+                          Submitted: {new Date(report.submissionDate).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                        {/* Class info from real data */}
+                        {report.class && (
+                          <span className="report-class">Class: {report.class}</span>
+                        )}
+                      </div>
                     </div>
                     
-                    <div className={`approval-badge ${report.cpApproved ? 'approved' : 'pending'}`}>
-                      {report.cpApproved ? (
-                        <CheckCircle size={16} />
-                      ) : (
-                        <Clock size={16} />
-                      )}
-                      <span>CP {report.cpApproved ? 'Approved' : 'Pending'}</span>
+                    {/* Status from real API data */}
+                    <div className={`report-status status-${report.status}`}>
+                      {report.status === 'approved' && <CheckCircle size={16} />}
+                      {report.status === 'pending' && <Clock size={16} />}
+                      {report.status === 'rejected' && <XCircle size={16} />}
+                      {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                     </div>
                   </div>
-                </div>
 
-                <div className="report-card-actions">
-                  <button
-                    className="action-btn btn-view"
-                    onClick={() => handleView(report.id)}
-                  >
-                    <Eye size={16} />
-                    View
-                  </button>
-                  <button
-                    className="action-btn btn-download"
-                    onClick={() => handleDownload(report.id)}
-                    disabled={downloadingId === report.id}
-                  >
-                    <Download size={16} />
-                    {downloadingId === report.id ? 'Downloading...' : 'Download'}
-                  </button>
+                  <div className="report-card-body">
+                    {/* Approval badges from real API data */}
+                    <div className="approval-badges">
+                      <div className={`approval-badge ${report.csApproved ? 'approved' : 'pending'}`}>
+                        {report.csApproved ? (
+                          <CheckCircle size={16} />
+                        ) : (
+                          <Clock size={16} />
+                        )}
+                        <span>CS {report.csApproved ? 'Approved' : 'Pending'}</span>
+                      </div>
+                      
+                      <div className={`approval-badge ${report.cpApproved ? 'approved' : 'pending'}`}>
+                        {report.cpApproved ? (
+                          <CheckCircle size={16} />
+                        ) : (
+                          <Clock size={16} />
+                        )}
+                        <span>CP {report.cpApproved ? 'Approved' : 'Pending'}</span>
+                      </div>
+                    </div>
+                    
+                    {/* General comment from real data */}
+                    {report.generalComment && (
+                      <p className="report-comment">
+                        {report.generalComment.length > 150 
+                          ? `${report.generalComment.substring(0, 150)}...` 
+                          : report.generalComment}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="report-card-actions">
+                    <button
+                      className="action-btn btn-view"
+                      onClick={() => handleView(report.id)}
+                    >
+                      <Eye size={16} />
+                      View
+                    </button>
+                    <button
+                      className="action-btn btn-download"
+                      onClick={() => handleDownload(report.id)}
+                      disabled={downloadingId === report.id}
+                    >
+                      <Download size={16} />
+                      {downloadingId === report.id ? 'Downloading...' : 'Download'}
+                    </button>
+                  </div>
                 </div>
+              ))}
+            </div>
+
+            {/* PAGINATION - This will work with real pagination from API */}
+            {pagination.totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  className="pagination-btn"
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPrev || loading}
+                >
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
+                
+                <span className="pagination-info">
+                  Page {pagination.currentPage} of {pagination.totalPages}
+                </span>
+                
+                <button
+                  className="pagination-btn"
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNext || loading}
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </StudentLayout>
@@ -349,4 +380,3 @@ const ReportPage = () => {
 };
 
 export default ReportPage;
-

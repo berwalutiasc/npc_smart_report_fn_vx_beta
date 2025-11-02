@@ -18,7 +18,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -170,10 +170,18 @@ const Sidebar: React.FC<SidebarProps> = ({
   const router = useRouter();
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const { logout, isLoggingOut } = useLogout();
-  const role = localStorage.getItem('role');
-  const studentName = localStorage.getItem('studentName');
-  const studentEmail = localStorage.getItem('studentEmail');
-  const studentRole = localStorage.getItem('studentRole');
+  const [role, setRole] = useState<string | null>(null);
+  const [studentName, setStudentName] = useState<string | null>(null);
+  const [studentEmail, setStudentEmail] = useState<string | null>(null);
+  const [studentRole, setStudentRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Runs only in the browser
+    setRole(localStorage.getItem("role"));
+    setStudentName(localStorage.getItem("studentName"));
+    setStudentEmail(localStorage.getItem("studentEmail"));
+    setStudentRole(localStorage.getItem("studentRole"));
+  }, []);
 
   /**
    * FILTERED NAVIGATION ITEMS

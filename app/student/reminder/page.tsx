@@ -34,25 +34,14 @@ interface ReminderFormData {
   reminderType: string;
   subject: string;
   message: string;
-  recipients: string[];
 }
 
-// Available recipients
-const availableRecipients = [
-  { id: '1', name: 'John Doe', email: 'john.doe@example.com' },
-  { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com' },
-  { id: '3', name: 'Mike Johnson', email: 'mike.johnson@example.com' },
-  { id: '4', name: 'Sarah Williams', email: 'sarah.williams@example.com' },
-  { id: '5', name: 'Tom Brown', email: 'tom.brown@example.com' },
-  { id: '6', name: 'Emily Davis', email: 'emily.davis@example.com' }
-];
 
 const ReminderPage = () => {
   const [formData, setFormData] = useState<ReminderFormData>({
     reminderType: 'report_submission',
     subject: '',
     message: '',
-    recipients: []
   });
   
   const [isSending, setIsSending] = useState(false);
@@ -67,31 +56,9 @@ const ReminderPage = () => {
       setErrors({ ...errors, [field]: '' });
     }
   };
+  
 
-  // Handle recipient toggle
-  const toggleRecipient = (recipientId: string) => {
-    const newRecipients = formData.recipients.includes(recipientId)
-      ? formData.recipients.filter(id => id !== recipientId)
-      : [...formData.recipients, recipientId];
-    
-    setFormData({ ...formData, recipients: newRecipients });
-    if (errors.recipients) {
-      setErrors({ ...errors, recipients: '' });
-    }
-  };
-
-  // Select all recipients
-  const selectAllRecipients = () => {
-    setFormData({ ...formData, recipients: availableRecipients.map(r => r.id) });
-    if (errors.recipients) {
-      setErrors({ ...errors, recipients: '' });
-    }
-  };
-
-  // Clear all recipients
-  const clearAllRecipients = () => {
-    setFormData({ ...formData, recipients: [] });
-  };
+  
 
   // Validate form
   const validateForm = (): boolean => {
@@ -103,10 +70,6 @@ const ReminderPage = () => {
 
     if (!formData.message.trim()) {
       newErrors.message = 'Message is required';
-    }
-
-    if (formData.recipients.length === 0) {
-      newErrors.recipients = 'Please select at least one recipient';
     }
 
     setErrors(newErrors);
@@ -132,7 +95,6 @@ const ReminderPage = () => {
         reminderType: 'report_submission',
         subject: '',
         message: '',
-        recipients: []
       });
     }, 3000);
   };
@@ -193,7 +155,7 @@ const ReminderPage = () => {
         </p>
       </div>
 
-      {/* SUCCESS MESSAGE */}
+      {/* SUCCESS MESSAGE
       {showSuccess && (
         <div className="success-banner slide-down">
           <CheckCircle size={24} />
@@ -202,7 +164,7 @@ const ReminderPage = () => {
             <p>Your reminder has been sent to {formData.recipients.length} recipient(s)</p>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* REMINDER FORM */}
       <div className="reminder-container fade-in">
@@ -271,65 +233,6 @@ const ReminderPage = () => {
               <div className="character-count">
                 {formData.message.length} characters
               </div>
-            </div>
-
-            {/* RECIPIENTS */}
-            <div className="form-field">
-              <div className="recipients-header">
-                <label className="form-label">
-                  <Users size={16} />
-                  Recipients
-                </label>
-                <div className="recipients-actions">
-                  <button
-                    type="button"
-                    className="btn-text"
-                    onClick={selectAllRecipients}
-                  >
-                    Select All
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-text"
-                    onClick={clearAllRecipients}
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
-              
-              <div className={`recipients-grid ${errors.recipients ? 'error' : ''}`}>
-                {availableRecipients.map((recipient) => (
-                  <label
-                    key={recipient.id}
-                    className={`recipient-item ${formData.recipients.includes(recipient.id) ? 'selected' : ''}`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.recipients.includes(recipient.id)}
-                      onChange={() => toggleRecipient(recipient.id)}
-                      className="recipient-checkbox"
-                    />
-                    <div className="recipient-info">
-                      <div className="recipient-name">{recipient.name}</div>
-                      <div className="recipient-email">{recipient.email}</div>
-                    </div>
-                    <div className="recipient-check">
-                      <CheckCircle size={18} />
-                    </div>
-                  </label>
-                ))}
-              </div>
-              
-              {errors.recipients && (
-                <span className="error-message">{errors.recipients}</span>
-              )}
-              
-              {formData.recipients.length > 0 && (
-                <div className="recipients-count">
-                  {formData.recipients.length} recipient(s) selected
-                </div>
-              )}
             </div>
 
             {/* SUBMIT BUTTON */}
