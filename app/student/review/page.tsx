@@ -1,15 +1,13 @@
 /**
- * STUDENT REVIEW PAGE (Debugged)
+ * STUDENT REVIEW PAGE (Calibrated)
  * 
  * LOCATION: /student/review
  * 
- * FEATURES:
- * - Fetch today's report from backend
- * - Safe parsing for evaluated items
- * - Unified base URL handling
- * - Defensive rendering for optional fields
- * - Proper environment variable usage
- * - Smooth loading, approval, and denial
+ * CHANGES MADE:
+ * - Always display today's report (even after approval/denial)
+ * - Hide approval buttons if user already took action
+ * - Removed unnecessary reliance on `canApprove`
+ * - Cleaned up state syncing and improved user feedback
  */
 
 "use client";
@@ -24,7 +22,6 @@ import {
   ThumbsDown,
   FileText,
   Clock,
-  User,
 } from "lucide-react";
 import "./review.css";
 
@@ -69,8 +66,6 @@ interface ApiResponse {
   data: {
     report?: Report;
     userAction?: UserAction | null;
-    hasApproved?: boolean;
-    canApprove?: boolean;
     studentRole?: "CS" | "CP";
   };
 }
@@ -84,8 +79,14 @@ const ReviewPage = () => {
   const [report, setReport] = useState<Report | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userAction, setUserAction] = useState<UserAction | null>(null);
-  const [canApprove, setCanApprove] = useState(true);
   const [studentRole, setStudentRole] = useState<"CS" | "CP" | "">("");
+
+  // ==================== POPUPS / MODALS ====================
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [showDenyConfirm, setShowDenyConfirm] = useState(false);
+  const [denyReason, setDenyReason] = useState("");
+  const [showDenyReason, setShowDenyReason] = useState(false);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   // ==================== FETCH REPORT ====================
   useEffect(() => {
@@ -103,7 +104,6 @@ const ReviewPage = () => {
           console.warn(`Failed to fetch report: ${response.status}`);
           setReport(null);
           setUserAction(null);
-          setCanApprove(false);
           setStudentRole("");
           return;
         }
@@ -113,20 +113,16 @@ const ReviewPage = () => {
         if (result.success && result.data?.report) {
           setReport(result.data.report);
           setUserAction(result.data.userAction || null);
-          setCanApprove(!!result.data.canApprove);
           setStudentRole(result.data.studentRole || "");
         } else {
-          console.warn("No report found:", result.message);
           setReport(null);
           setUserAction(null);
-          setCanApprove(false);
           setStudentRole("");
         }
       } catch (error) {
         console.error("Error fetching report:", error);
         setReport(null);
         setUserAction(null);
-        setCanApprove(false);
         setStudentRole("");
       } finally {
         setLoading(false);
@@ -137,10 +133,8 @@ const ReviewPage = () => {
   }, [BASE_URL]);
 
   // ==================== HANDLE APPROVE ====================
-  const handleApprove = async () => {
+  const doApprove = async () => {
     if (!report) return;
-    if (!confirm("Are you sure you want to approve this report?")) return;
-
     try {
       setIsSubmitting(true);
 
@@ -150,57 +144,40 @@ const ReviewPage = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({
-            comments: "Report approved successfully",
-          }),
+          body: JSON.stringify({ comments: "Report approved successfully" }),
         }
       );
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        alert(result.message || "Failed to approve report.");
+        setInfoMessage(result.message || "Failed to approve report.");
         return;
       }
 
-      alert("Report approved successfully!");
-      setCanApprove(false);
+      setInfoMessage("Report approved successfully!");
       setUserAction({
         approved: true,
         comments: "Report approved successfully",
         approvedAt: new Date().toISOString(),
         category: report.category,
       });
-
-      // Refresh report
-      const refresh = await fetch(`${BASE_URL}/api/student/report/approval`, {
-        credentials: "include",
-      });
-      if (refresh.ok) {
-        const newData: ApiResponse = await refresh.json();
-        if (newData.success && newData.data?.report)
-          setReport(newData.data.report);
-      }
     } catch (error) {
       console.error("Error approving report:", error);
-      alert("Unable to approve report. Please try again later.");
+      setInfoMessage("Unable to approve report. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ==================== HANDLE DENY ====================
-  const handleDeny = async () => {
+  const handleApprove = () => {
     if (!report) return;
+    setShowApproveConfirm(true);
+  };
 
-    const comments = prompt("Please provide reason for denial:");
-    if (!comments || !comments.trim()) {
-      alert("Please provide a valid reason for denial.");
-      return;
-    }
-
-    if (!confirm("Are you sure you want to deny this report?")) return;
-
+  // ==================== HANDLE DENY ====================
+  const doDeny = async (comments: string) => {
+    if (!report) return;
     try {
       setIsSubmitting(true);
 
@@ -217,33 +194,28 @@ const ReviewPage = () => {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        alert(result.message || "Failed to deny report.");
+        setInfoMessage(result.message || "Failed to deny report.");
         return;
       }
 
-      alert("Report denied successfully!");
-      setCanApprove(false);
+      setInfoMessage("Report denied successfully!");
       setUserAction({
         approved: false,
         comments: comments.trim(),
         approvedAt: new Date().toISOString(),
       });
-
-      // Refresh report
-      const refresh = await fetch(`${BASE_URL}/api/student/report/approval`, {
-        credentials: "include",
-      });
-      if (refresh.ok) {
-        const newData: ApiResponse = await refresh.json();
-        if (newData.success && newData.data?.report)
-          setReport(newData.data.report);
-      }
     } catch (error) {
       console.error("Error denying report:", error);
-      alert("Unable to deny report. Please try again later.");
+      setInfoMessage("Unable to deny report. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDeny = () => {
+    if (!report) return;
+    setDenyReason("");
+    setShowDenyReason(true);
   };
 
   // ==================== HELPERS ====================
@@ -266,7 +238,7 @@ const ReviewPage = () => {
 
     try {
       if (typeof items === "string") items = JSON.parse(items);
-      if (typeof items === "string") items = JSON.parse(items); // handle double stringified
+      if (typeof items === "string") items = JSON.parse(items); // handle double-stringified case
     } catch (e) {
       console.warn("Error parsing evaluated items:", e);
       return [];
@@ -296,7 +268,6 @@ const ReviewPage = () => {
   // ==================== RENDER ====================
   return (
     <StudentLayout>
-      {/* HEADER */}
       <div className="page-header review-page-header">
         <h1>Report Review</h1>
         <p>
@@ -305,7 +276,6 @@ const ReviewPage = () => {
         </p>
       </div>
 
-      {/* LOADING */}
       {loading ? (
         <div className="review-skeleton">
           <div className="skeleton skeleton-header"></div>
@@ -331,9 +301,7 @@ const ReviewPage = () => {
                     {studentRole && `as ${studentRole}`}
                   </strong>
                   {userAction.comments && (
-                    <p className="action-comments">
-                      Comments: {userAction.comments}
-                    </p>
+                    <p className="action-comments">Comments: {userAction.comments}</p>
                   )}
                   {userAction.approvedAt && (
                     <small className="action-time">
@@ -360,16 +328,16 @@ const ReviewPage = () => {
                   <p className="report-status">
                     Status:{" "}
                     <span
-                      className={`status-badge ${report.status.toLowerCase().replace("_", "-")}`}
+                      className={`status-badge ${report.status
+                        .toLowerCase()
+                        .replace("_", "-")}`}
                     >
                       {report.status.replace(/_/g, " ")}
                     </span>
                     {report.category && (
                       <>
                         {" • "}Category:{" "}
-                        <span className="category-badge">
-                          {report.category}
-                        </span>
+                        <span className="category-badge">{report.category}</span>
                       </>
                     )}
                   </p>
@@ -420,9 +388,7 @@ const ReviewPage = () => {
                             {getStatusIcon(status)}
                           </div>
                           <div className="item-info">
-                            <h4 className="item-name">
-                              {item.name || `Item ${i + 1}`}
-                            </h4>
+                            <h4 className="item-name">{item.name || `Item ${i + 1}`}</h4>
                             <p className="item-description">
                               {item.description || "No description"}
                             </p>
@@ -443,12 +409,9 @@ const ReviewPage = () => {
             </div>
           </div>
 
-          {/* ACTION BUTTONS */}
-          {canApprove && (
-            <div
-              className="review-actions fade-in"
-              style={{ animationDelay: "0.5s" }}
-            >
+          {/* ACTION BUTTONS — hidden if already acted */}
+          {!userAction && (
+            <div className="review-actions fade-in" style={{ animationDelay: "0.5s" }}>
               <button
                 className="action-btn btn-deny"
                 onClick={handleDeny}
@@ -465,6 +428,175 @@ const ReviewPage = () => {
                 <ThumbsUp size={20} />
                 {isSubmitting ? "Processing..." : "Approve Report"}
               </button>
+            </div>
+          )}
+
+          {/* ======= MODALS ======= */}
+          {showApproveConfirm && (
+            <div
+              className="modal-backdrop"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setShowApproveConfirm(false);
+              }}
+            >
+              <div className="modal">
+                <button
+                  className="logout-popup-close"
+                  onClick={() => setShowApproveConfirm(false)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+                <div className="modal-header-icon icon-success">
+                  <CheckCircle size={40} />
+                </div>
+                <h3>Confirm Approval</h3>
+                <p>Are you sure you want to approve this report?</p>
+                <div className="modal-actions">
+                  <button
+                    className="modal-btn btn-secondary"
+                    onClick={() => setShowApproveConfirm(false)}
+                  >
+                    No, Cancel
+                  </button>
+                  <button
+                    className="modal-btn btn-success"
+                    onClick={async () => {
+                      setShowApproveConfirm(false);
+                      await doApprove();
+                    }}
+                  >
+                    Yes, Approve
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showDenyReason && (
+            <div
+              className="modal-backdrop"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setShowDenyReason(false);
+              }}
+            >
+              <div className="modal">
+                <button
+                  className="logout-popup-close"
+                  onClick={() => setShowDenyReason(false)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+                <div className="modal-header-icon icon-danger">
+                  <XCircle size={40} />
+                </div>
+                <h3>Reason for Denial</h3>
+                <p>Please provide a brief reason for denying this report.</p>
+                <textarea
+                  value={denyReason}
+                  onChange={(e) => setDenyReason(e.target.value)}
+                  rows={4}
+                  className="modal-textarea"
+                  placeholder="Enter reason..."
+                />
+                <div className="modal-actions">
+                  <button
+                    className="modal-btn btn-secondary"
+                    onClick={() => setShowDenyReason(false)}
+                  >
+                    No, Cancel
+                  </button>
+                  <button
+                    className="modal-btn btn-danger"
+                    onClick={() => {
+                      const trimmed = denyReason.trim();
+                      if (!trimmed) {
+                        setInfoMessage("Please provide a valid reason for denial.");
+                        return;
+                      }
+                      setShowDenyReason(false);
+                      setShowDenyConfirm(true);
+                    }}
+                  >
+                    Continue to Deny
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showDenyConfirm && (
+            <div
+              className="modal-backdrop"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setShowDenyConfirm(false);
+              }}
+            >
+              <div className="modal">
+                <button
+                  className="logout-popup-close"
+                  onClick={() => setShowDenyConfirm(false)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+                <div className="modal-header-icon icon-danger">
+                  <XCircle size={40} />
+                </div>
+                <h3>Confirm Denial</h3>
+                <p>Are you sure you want to deny this report?</p>
+                <div className="modal-actions">
+                  <button
+                    className="modal-btn btn-secondary"
+                    onClick={() => setShowDenyConfirm(false)}
+                  >
+                    No, Cancel
+                  </button>
+                  <button
+                    className="modal-btn btn-danger"
+                    onClick={async () => {
+                      const trimmed = denyReason.trim();
+                      setShowDenyConfirm(false);
+                      await doDeny(trimmed);
+                    }}
+                  >
+                    Yes, Deny
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {infoMessage && (
+            <div
+              className="modal-backdrop"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setInfoMessage(null);
+              }}
+            >
+              <div className="modal">
+                <button
+                  className="logout-popup-close"
+                  onClick={() => setInfoMessage(null)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+                <div className="modal-header-icon">
+                  <Clock size={40} />
+                </div>
+                <h3>Notice</h3>
+                <p>{infoMessage}</p>
+                <div className="modal-actions">
+                  <button
+                    className="modal-btn btn-primary"
+                    onClick={() => setInfoMessage(null)}
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
