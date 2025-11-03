@@ -74,7 +74,7 @@ const LoginPage = () => {
       if (response.ok) {
         toastSuccess({
           title: 'Login Successful',
-          description: 'Redirecting to your dashboard...',
+          description: 'Redirecting to Verificaton Page...',
         });
         
         // Get the intended destination or default to dashboard

@@ -100,10 +100,10 @@ const VerifyPage = () => {
         //getting the role sent from json response in api
         let directory = '';
         const role = data.role;
-        if (role === 'ADMIN') {
-          directory = '/admin/dashboard';
-        } else if (role === 'STUDENT') {
+        if (role === 'STUDENT') {
           directory = '/student/dashboard';
+        }else {
+          directory = '/admin/dashboard';
         }
 
 
