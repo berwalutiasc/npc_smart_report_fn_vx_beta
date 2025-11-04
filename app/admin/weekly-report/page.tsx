@@ -15,7 +15,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { 
   TrendingUp,
@@ -29,218 +29,182 @@ import {
   X,
   ThumbsUp,
   ThumbsDown,
-  Flag
+  Flag,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import '../dashboard/dashboard.css';
 import './weekly-report.css';
 
-interface DayDetail {
-  good: { count: number; items: { name: string; class: string }[] };
-  bad: { count: number; items: { name: string; class: string }[] };
-  flagged: { count: number; items: { name: string; class: string }[] };
+interface ApiResponse {
+  success: boolean;
+  data: {
+    weeklyStats: {
+      totalReports: number;
+      totalRepresentatives: number;
+      flaggedItems: number;
+      resolvedIssues: number;
+      trend: number;
+    };
+    dailyBreakdown: {
+      day: string;
+      reports: number;
+      flagged: number;
+      approved: number;
+    }[];
+    topPerformers: {
+      name: string;
+      class: string;
+      reports: number;
+      completion: number;
+    }[];
+    dayDetails: Record<string, {
+      good: { count: number; items: { name: string; class: string }[] };
+      bad: { count: number; items: { name: string; class: string }[] };
+      flagged: { count: number; items: { name: string; class: string }[] };
+    }>;
+    dateRange: string;
+  };
+  message: string;
 }
-
 const WeeklyReportPage = () => {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const weekStats = {
-    totalReports: 127,
-    totalRepresentatives: 45,
-    flaggedItems: 23,
-    resolvedIssues: 18,
-    trend: 12.5
-  };
-
-  const dailyBreakdown = [
-    { day: 'Monday', reports: 18, flagged: 3, approved: 15 },
-    { day: 'Tuesday', reports: 22, flagged: 5, approved: 17 },
-    { day: 'Wednesday', reports: 19, flagged: 4, approved: 15 },
-    { day: 'Thursday', reports: 25, flagged: 6, approved: 19 },
-    { day: 'Friday', reports: 21, flagged: 3, approved: 18 },
-    { day: 'Saturday', reports: 12, flagged: 1, approved: 11 },
-    { day: 'Sunday', reports: 10, flagged: 1, approved: 9 }
-  ];
-
-  // Mock detailed data for each day
-  const dayDetails: Record<string, DayDetail> = {
+  // State for API data
+  const [weekStats, setWeekStats] = useState({
+    totalReports: 0,
+    totalRepresentatives: 0,
+    flaggedItems: 0,
+    resolvedIssues: 0,
+    trend: 0
+  });
+  const [dailyBreakdown, setDailyBreakdown] = useState<{ day: string; reports: number; flagged: number; approved: number }[]>([]);
+  const [topPerformers, setTopPerformers] = useState<{ name: string; class: string; reports: number; completion: number }[]>([
+    {
+      name: 'John Doe',
+      class: 'Computer Science Year 3',
+      reports: 56,
+      completion: 100
+    },
+    {
+      name: 'Jane Smith',
+      class: 'Engineering Year 1',
+      reports: 56,
+      completion: 100
+    }
+  ]);
+  const [dayDetails, setDayDetails] = useState<Record<string, { good: { count: number; items: { name: string; class: string }[] }; bad: { count: number; items: { name: string; class: string }[] }; flagged: { count: number; items: { name: string; class: string }[] } }>>({
     'Monday': {
-      good: {
-        count: 56,
-        items: [
-          { name: 'John Doe', class: 'Computer Science Year 3' },
-          { name: 'Jane Smith', class: 'Engineering Year 2' },
-          { name: 'Mike Johnson', class: 'Chemistry Year 4' },
-          { name: 'Sarah Williams', class: 'Physics Year 3' },
-          { name: 'Tom Brown', class: 'Computer Science Year 4' }
-        ]
-      },
-      bad: {
-        count: 17,
-        items: [
-          { name: 'Alex Davis', class: 'Engineering Year 1' },
-          { name: 'Emma Wilson', class: 'Chemistry Year 2' },
-          { name: 'Chris Taylor', class: 'Physics Year 1' }
-        ]
-      },
-      flagged: {
-        count: 8,
-        items: [
-          { name: 'Oliver Martinez', class: 'Computer Science Year 2' },
-          { name: 'Sophia Anderson', class: 'Engineering Year 3' }
-        ]
-      }
+      good: { count: 56, items: [{ name: 'John Doe', class: 'Computer Science Year 3' }] },
+      bad: { count: 17, items: [{ name: 'Alex Davis', class: 'Engineering Year 1' }] },
+      flagged: { count: 8, items: [{ name: 'Oliver Martinez', class: 'Computer Science Year 2' }] }
+    }
+  });
+  const [dateRange, setDateRange] = useState('');
+
+  // Mock data for fallback
+  const mockDayDetails = {
+    'Monday': {
+      good: { count: 56, items: [{ name: 'John Doe', class: 'Computer Science Year 3' }] },
+      bad: { count: 17, items: [{ name: 'Alex Davis', class: 'Engineering Year 1' }] },
+      flagged: { count: 8, items: [{ name: 'Oliver Martinez', class: 'Computer Science Year 2' }] }
     },
     'Tuesday': {
-      good: {
-        count: 62,
-        items: [
-          { name: 'Liam Garcia', class: 'Computer Science Year 3' },
-          { name: 'Ava Rodriguez', class: 'Engineering Year 2' },
-          { name: 'Noah Lee', class: 'Chemistry Year 4' },
-          { name: 'Isabella Walker', class: 'Physics Year 3' }
-        ]
-      },
-      bad: {
-        count: 20,
-        items: [
-          { name: 'Ethan Hall', class: 'Engineering Year 1' },
-          { name: 'Mia Allen', class: 'Chemistry Year 2' },
-          { name: 'James Young', class: 'Physics Year 1' }
-        ]
-      },
-      flagged: {
-        count: 10,
-        items: [
-          { name: 'Charlotte King', class: 'Computer Science Year 2' },
-          { name: 'Benjamin Wright', class: 'Engineering Year 3' },
-          { name: 'Amelia Scott', class: 'Chemistry Year 1' }
-        ]
-      }
+      good: { count: 62, items: [{ name: 'Liam Garcia', class: 'Computer Science Year 3' }] },
+      bad: { count: 20, items: [{ name: 'Ethan Hall', class: 'Engineering Year 1' }] },
+      flagged: { count: 10, items: [{ name: 'Charlotte King', class: 'Computer Science Year 2' }] }
     },
     'Wednesday': {
-      good: {
-        count: 54,
-        items: [
-          { name: 'Lucas Green', class: 'Computer Science Year 3' },
-          { name: 'Harper Adams', class: 'Engineering Year 2' },
-          { name: 'Mason Baker', class: 'Chemistry Year 4' }
-        ]
-      },
-      bad: {
-        count: 15,
-        items: [
-          { name: 'Evelyn Nelson', class: 'Engineering Year 1' },
-          { name: 'Logan Carter', class: 'Chemistry Year 2' }
-        ]
-      },
-      flagged: {
-        count: 7,
-        items: [
-          { name: 'Ella Mitchell', class: 'Computer Science Year 2' },
-          { name: 'Jackson Perez', class: 'Engineering Year 3' }
-        ]
-      }
+      good: { count: 54, items: [{ name: 'Lucas Green', class: 'Computer Science Year 3' }] },
+      bad: { count: 15, items: [{ name: 'Evelyn Nelson', class: 'Engineering Year 1' }] },
+      flagged: { count: 7, items: [{ name: 'Ella Mitchell', class: 'Computer Science Year 2' }] }
     },
     'Thursday': {
-      good: {
-        count: 68,
-        items: [
-          { name: 'Avery Roberts', class: 'Computer Science Year 3' },
-          { name: 'Sebastian Turner', class: 'Engineering Year 2' },
-          { name: 'Scarlett Phillips', class: 'Chemistry Year 4' }
-        ]
-      },
-      bad: {
-        count: 22,
-        items: [
-          { name: 'Jack Campbell', class: 'Engineering Year 1' },
-          { name: 'Sofia Parker', class: 'Chemistry Year 2' },
-          { name: 'Henry Evans', class: 'Physics Year 1' }
-        ]
-      },
-      flagged: {
-        count: 12,
-        items: [
-          { name: 'Luna Edwards', class: 'Computer Science Year 2' },
-          { name: 'Owen Collins', class: 'Engineering Year 3' }
-        ]
-      }
+      good: { count: 68, items: [{ name: 'Avery Roberts', class: 'Computer Science Year 3' }] },
+      bad: { count: 22, items: [{ name: 'Jack Campbell', class: 'Engineering Year 1' }] },
+      flagged: { count: 12, items: [{ name: 'Luna Edwards', class: 'Computer Science Year 2' }] }
     },
     'Friday': {
-      good: {
-        count: 60,
-        items: [
-          { name: 'Grace Stewart', class: 'Computer Science Year 3' },
-          { name: 'Wyatt Sanchez', class: 'Engineering Year 2' }
-        ]
-      },
-      bad: {
-        count: 18,
-        items: [
-          { name: 'Chloe Morris', class: 'Engineering Year 1' },
-          { name: 'Grayson Rogers', class: 'Chemistry Year 2' }
-        ]
-      },
-      flagged: {
-        count: 9,
-        items: [
-          { name: 'Lily Reed', class: 'Computer Science Year 2' },
-          { name: 'Leo Cook', class: 'Engineering Year 3' }
-        ]
-      }
+      good: { count: 60, items: [{ name: 'Grace Stewart', class: 'Computer Science Year 3' }] },
+      bad: { count: 18, items: [{ name: 'Chloe Morris', class: 'Engineering Year 1' }] },
+      flagged: { count: 9, items: [{ name: 'Lily Reed', class: 'Computer Science Year 2' }] }
     },
     'Saturday': {
-      good: {
-        count: 38,
-        items: [
-          { name: 'Zoe Morgan', class: 'Computer Science Year 3' },
-          { name: 'Elijah Bell', class: 'Engineering Year 2' }
-        ]
-      },
-      bad: {
-        count: 10,
-        items: [
-          { name: 'Aria Murphy', class: 'Engineering Year 1' }
-        ]
-      },
-      flagged: {
-        count: 4,
-        items: [
-          { name: 'Aiden Bailey', class: 'Computer Science Year 2' }
-        ]
-      }
+      good: { count: 38, items: [{ name: 'Zoe Morgan', class: 'Computer Science Year 3' }] },
+      bad: { count: 10, items: [{ name: 'Aria Murphy', class: 'Engineering Year 1' }] },
+      flagged: { count: 4, items: [{ name: 'Aiden Bailey', class: 'Computer Science Year 2' }] }
     },
     'Sunday': {
-      good: {
-        count: 32,
-        items: [
-          { name: 'Riley Rivera', class: 'Computer Science Year 3' }
-        ]
-      },
-      bad: {
-        count: 8,
-        items: [
-          { name: 'Zoey Cooper', class: 'Engineering Year 1' }
-        ]
-      },
-      flagged: {
-        count: 3,
-        items: [
-          { name: 'Nolan Richardson', class: 'Computer Science Year 2' }
-        ]
-      }
+      good: { count: 32, items: [{ name: 'Riley Rivera', class: 'Computer Science Year 3' }] },
+      bad: { count: 8, items: [{ name: 'Zoey Cooper', class: 'Engineering Year 1' }] },
+      flagged: { count: 3, items: [{ name: 'Nolan Richardson', class: 'Computer Science Year 2' }] }
     }
   };
 
-  const topPerformers = [
-    { name: 'John Doe', class: 'Computer Science', reports: 7, completion: 100 },
-    { name: 'Jane Smith', class: 'Engineering', reports: 6, completion: 100 },
-    { name: 'Mike Johnson', class: 'Chemistry', reports: 5, completion: 98 }
-  ];
+  /**
+   * FETCH WEEKLY REPORT DATA FROM API
+   */
+  const fetchWeeklyReport = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('http://localhost:5000/api/admin/dashboard/getWeeklyReport');
+      const result: ApiResponse = await response.json();
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to fetch weekly report data');
+      }
+      
+      setWeekStats(result.data.weeklyStats);
+      setDailyBreakdown(result.data.dailyBreakdown);
+      setTopPerformers(result.data.topPerformers);
+      setDayDetails(result.data.dayDetails);
+      setDateRange(result.data.dateRange);
+      
+    } catch (err) {
+      console.error('Error fetching weekly report:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load weekly report data');
+      
+      // Fallback to mock data
+      setWeekStats({
+        totalReports: 127,
+        totalRepresentatives: 45,
+        flaggedItems: 23,
+        resolvedIssues: 18,
+        trend: 12.5
+      });
+      setDailyBreakdown([
+        { day: 'Monday', reports: 18, flagged: 3, approved: 15 },
+        { day: 'Tuesday', reports: 22, flagged: 5, approved: 17 },
+        { day: 'Wednesday', reports: 19, flagged: 4, approved: 15 },
+        { day: 'Thursday', reports: 25, flagged: 6, approved: 19 },
+        { day: 'Friday', reports: 21, flagged: 3, approved: 18 },
+        { day: 'Saturday', reports: 12, flagged: 1, approved: 11 },
+        { day: 'Sunday', reports: 10, flagged: 1, approved: 9 }
+      ]);
+      setTopPerformers([
+        { name: 'John Doe', class: 'Computer Science', reports: 7, completion: 100 },
+        { name: 'Jane Smith', class: 'Engineering', reports: 6, completion: 100 },
+        { name: 'Mike Johnson', class: 'Chemistry', reports: 5, completion: 98 }
+      ]);
+      setDayDetails(mockDayDetails);
+      setDateRange('Oct 24 - Oct 30, 2024');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeeklyReport();
+  }, []);
 
   const handleDayClick = (day: string) => {
-    setSelectedDay(day);
+    const dayKey = day.includes(' - ') ? day.split(' - ')[0] : day;
+    setSelectedDay(dayKey);
     setShowModal(true);
   };
 
@@ -249,24 +213,72 @@ const WeeklyReportPage = () => {
     setSelectedDay(null);
   };
 
+  const handleExport = () => {
+    // Export functionality would go here
+    alert('Export functionality would be implemented here');
+  };
+
   const currentDayDetails = selectedDay ? dayDetails[selectedDay] : null;
+
+  /**
+   * RENDER ERROR MESSAGE
+   */
+  const renderErrorMessage = () => (
+    <div className="error-banner slide-in-right">
+      <AlertCircle size={20} />
+      <span>{error}</span>
+      <button 
+        onClick={fetchWeeklyReport}
+        className="retry-button"
+      >
+        <RefreshCw size={16} />
+        Retry
+      </button>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading weekly report...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
       <div className="page-header" style={{ marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: '700', color: '#1a202c', margin: 0 }}>
-            Weekly Report
-          </h1>
-          <p style={{ color: '#718096', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-            Week of Oct 24 - Oct 30, 2024
-          </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+          <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: '700', color: '#1a202c', margin: 0 }}>
+              Weekly Report
+            </h1>
+            <p style={{ color: '#718096', marginTop: '0.5rem', fontSize: '0.95rem' }}>
+              Week of {dateRange}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button 
+              onClick={fetchWeeklyReport}
+              className="refresh-button"
+              disabled={loading}
+            >
+              <RefreshCw size={20} className={loading ? 'spinning' : ''} />
+              Refresh
+            </button>
+            <button className="btn-export" onClick={handleExport}>
+              <Download size={18} />
+              Export Summary
+            </button>
+          </div>
         </div>
-        <button className="btn-export" style={{ marginLeft: 'auto' }}>
-          <Download size={18} />
-          Export Summary
-        </button>
       </div>
+
+      {/* ERROR BANNER */}
+      {error && renderErrorMessage()}
 
       {/* Weekly Stats */}
       <div className="stats-grid">
@@ -275,9 +287,9 @@ const WeeklyReportPage = () => {
             <div className="stat-icon" style={{ backgroundColor: '#3b82f615', color: '#3b82f6' }}>
               <FileText size={24} />
             </div>
-            <div className="stat-trend" style={{ color: '#10b981' }}>
-              <TrendingUp size={16} />
-              <span>{weekStats.trend}%</span>
+            <div className="stat-trend" style={{ color: weekStats.trend >= 0 ? '#10b981' : '#ef4444' }}>
+              <TrendingUp size={16} style={{ transform: weekStats.trend < 0 ? 'rotate(180deg)' : 'none' }} />
+              <span>{Math.abs(weekStats.trend)}%</span>
             </div>
           </div>
           <div className="stat-content">
@@ -332,45 +344,29 @@ const WeeklyReportPage = () => {
           </h3>
         </div>
         <div className="card-content">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="day-breakdown-list">
             {dailyBreakdown.map((day, index) => (
               <div 
                 key={index} 
                 className="day-breakdown-item"
                 onClick={() => handleDayClick(day.day)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '1rem',
-                  background: '#f7fafc',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
               >
-                <div style={{ flex: '0 0 120px', fontWeight: '600', color: '#1a202c' }}>
+                <div className="day-breakdown-name">
                   {day.day}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    fontSize: '0.875rem',
-                    color: '#718096',
-                    marginBottom: '0.5rem'
-                  }}>
+                <div className="day-breakdown-content">
+                  <div className="day-breakdown-meta">
                     <span>Reports: {day.reports}</span>
                     <span>Flagged: {day.flagged}</span>
                     <span>Approved: {day.approved}</span>
                   </div>
-                  <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{
-                      height: '100%',
-                      width: `${(day.approved / day.reports) * 100}%`,
-                      background: 'linear-gradient(90deg, #10b981, #34d399)',
-                      transition: 'width 0.3s ease'
-                    }}></div>
+                  <div className="day-progress">
+                    <div 
+                      className="day-progress-fill" 
+                      style={{ 
+                        width: `${day.reports > 0 ? (day.approved / day.reports) * 100 : 0}%` 
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -388,52 +384,33 @@ const WeeklyReportPage = () => {
           </h3>
         </div>
         <div className="card-content">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="top-performers-list">
             {topPerformers.map((performer, index) => (
-              <div key={index} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                padding: '1rem',
-                background: index === 0 ? '#fef3c7' : '#f7fafc',
-                borderRadius: '8px',
-                border: index === 0 ? '2px solid #f59e0b' : '1px solid #e2e8f0'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: index === 0 ? '#f59e0b' : '#cbd5e0',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: '700',
-                  fontSize: '1.125rem'
-                }}>
+              <div key={index} className={`top-performer-item ${index === 0 ? 'highlight' : ''}`}>
+                <div className={`rank-circle ${index === 0 ? 'rank-1' : ''}`}>
                   {index + 1}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '600', color: '#1a202c', marginBottom: '0.25rem' }}>
+                <div className="top-performer-main">
+                  <div className="top-performer-name">
                     {performer.name}
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#718096' }}>
+                  <div className="top-performer-class">
                     {performer.class}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: '700', color: '#1a202c', fontSize: '1.125rem' }}>
+                <div className="top-performer-metric">
+                  <div className="metric-value">
                     {performer.reports}
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#718096' }}>
+                  <div className="metric-label">
                     reports
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: '700', color: '#10b981', fontSize: '1.125rem' }}>
+                <div className="top-performer-metric">
+                  <div className={`metric-value ${performer.completion >= 90 ? 'success' : 'warning'}`}>
                     {performer.completion}%
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#718096' }}>
+                  <div className="metric-label">
                     complete
                   </div>
                 </div>
@@ -463,11 +440,16 @@ const WeeklyReportPage = () => {
                   <span className="count-badge">{currentDayDetails.good.count}</span>
                 </div>
                 <div className="detail-list">
-                  {currentDayDetails.good.items.map((item, idx) => (
-                    <div key={idx} className="detail-item">
-                      <div className="detail-item-name">{item.name}</div>
-                    </div>
-                  ))}
+                  {currentDayDetails.good.items.length > 0 ? (
+                    currentDayDetails.good.items.map((item, idx) => (
+                      <div key={idx} className="detail-item">
+                        <div className="detail-item-name">{item.name}</div>
+                        <div className="detail-item-class">{item.class}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-data">No good reports for this day</div>
+                  )}
                 </div>
               </div>
 
@@ -479,12 +461,16 @@ const WeeklyReportPage = () => {
                   <span className="count-badge">{currentDayDetails.bad.count}</span>
                 </div>
                 <div className="detail-list">
-                  {currentDayDetails.bad.items.map((item, idx) => (
-                    <div key={idx} className="detail-item">
-                      <div className="detail-item-name">{item.name}</div>
-                      <div className="detail-item-class">{item.class}</div>
-                    </div>
-                  ))}
+                  {currentDayDetails.bad.items.length > 0 ? (
+                    currentDayDetails.bad.items.map((item, idx) => (
+                      <div key={idx} className="detail-item">
+                        <div className="detail-item-name">{item.name}</div>
+                        <div className="detail-item-class">{item.class}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-data">No bad reports for this day</div>
+                  )}
                 </div>
               </div>
 
@@ -496,12 +482,16 @@ const WeeklyReportPage = () => {
                   <span className="count-badge">{currentDayDetails.flagged.count}</span>
                 </div>
                 <div className="detail-list">
-                  {currentDayDetails.flagged.items.map((item, idx) => (
-                    <div key={idx} className="detail-item">
-                      <div className="detail-item-name">{item.name}</div>
-                      <div className="detail-item-class">{item.class}</div>
-                    </div>
-                  ))}
+                  {currentDayDetails.flagged.items.length > 0 ? (
+                    currentDayDetails.flagged.items.map((item, idx) => (
+                      <div key={idx} className="detail-item">
+                        <div className="detail-item-name">{item.name}</div>
+                        <div className="detail-item-class">{item.class}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-data">No flagged reports for this day</div>
+                  )}
                 </div>
               </div>
             </div>

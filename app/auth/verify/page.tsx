@@ -108,10 +108,18 @@ const VerifyPage = () => {
 
 
         //save the role to local storage
+
+        if (role === 'STUDENT') {   //student
         localStorage.setItem('role', role);
-        localStorage.setItem('studentName', data.user.name);
-        localStorage.setItem('studentEmail', data.user.email);
-        localStorage.setItem('studentRole', data.user.studentRole);
+          localStorage.setItem('studentName', data.user.name);
+          localStorage.setItem('studentEmail', data.user.email);
+          localStorage.setItem('studentRole', data.user.studentRole);
+        }else {
+          //admin
+          localStorage.setItem('role', role);
+          localStorage.setItem('adminName', data.user.name);
+          localStorage.setItem('adminEmail', data.user.email);
+        }
         
 
         //wait 2 seconds before redirecting to let user see the toast

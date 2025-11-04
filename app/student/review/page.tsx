@@ -13,6 +13,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import StudentLayout from "../components/StudentLayout";
 import {
   CheckCircle,
@@ -87,6 +88,17 @@ const ReviewPage = () => {
   const [denyReason, setDenyReason] = useState("");
   const [showDenyReason, setShowDenyReason] = useState(false);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
+
+  const renderInPortal = (node: React.ReactNode) => {
+    if (!isMounted) return null;
+    return createPortal(node as any, document.body);
+  };
 
   // ==================== FETCH REPORT ====================
   useEffect(() => {
@@ -432,7 +444,7 @@ const ReviewPage = () => {
           )}
 
           {/* ======= MODALS ======= */}
-          {showApproveConfirm && (
+          {showApproveConfirm && renderInPortal(
             <div
               className="modal-backdrop"
               onClick={(e) => {
@@ -441,7 +453,7 @@ const ReviewPage = () => {
             >
               <div className="modal">
                 <button
-                  className="logout-popup-close"
+                  className="modal-close"
                   onClick={() => setShowApproveConfirm(false)}
                   aria-label="Close"
                 >
@@ -473,7 +485,7 @@ const ReviewPage = () => {
             </div>
           )}
 
-          {showDenyReason && (
+          {showDenyReason && renderInPortal(
             <div
               className="modal-backdrop"
               onClick={(e) => {
@@ -482,7 +494,7 @@ const ReviewPage = () => {
             >
               <div className="modal">
                 <button
-                  className="logout-popup-close"
+                  className="modal-close"
                   onClick={() => setShowDenyReason(false)}
                   aria-label="Close"
                 >
@@ -526,7 +538,7 @@ const ReviewPage = () => {
             </div>
           )}
 
-          {showDenyConfirm && (
+          {showDenyConfirm && renderInPortal(
             <div
               className="modal-backdrop"
               onClick={(e) => {
@@ -535,7 +547,7 @@ const ReviewPage = () => {
             >
               <div className="modal">
                 <button
-                  className="logout-popup-close"
+                  className="modal-close"
                   onClick={() => setShowDenyConfirm(false)}
                   aria-label="Close"
                 >
@@ -568,7 +580,7 @@ const ReviewPage = () => {
             </div>
           )}
 
-          {infoMessage && (
+          {infoMessage && renderInPortal(
             <div
               className="modal-backdrop"
               onClick={(e) => {
@@ -577,7 +589,7 @@ const ReviewPage = () => {
             >
               <div className="modal">
                 <button
-                  className="logout-popup-close"
+                  className="modal-close"
                   onClick={() => setInfoMessage(null)}
                   aria-label="Close"
                 >

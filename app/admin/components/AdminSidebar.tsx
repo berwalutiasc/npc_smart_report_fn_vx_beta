@@ -18,7 +18,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -67,6 +67,8 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  allowedRoles?: string[];
+  hiddenRoles?: string[];
 }
 
 /**
@@ -142,6 +144,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const router = useRouter();
   const [showLogoutPopup, setShowLogoutPopup] = useState(false);
   const { logout, isLoggingOut } = useLogout();
+  const [adminName, setAdminName] = useState<string | null>(null);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setAdminName(localStorage.getItem('adminName'));
+    setAdminEmail(localStorage.getItem('adminEmail'));
+    setRole(localStorage.getItem('role'));
+  }, []);
 
   /**
    * HANDLE LOGOUT CLICK
@@ -231,8 +242,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </div>
           {!isCollapsed && (
             <div className="user-info">
-              <p className="user-name">Admin User</p>
-              <p className="user-role">Administrator</p>
+              <p className="user-name">{adminName}</p>
+              <p className="user-role">{role}</p>
+              <p className="user-email text-xs">{adminEmail}</p>
             </div>
           )}
         </div>

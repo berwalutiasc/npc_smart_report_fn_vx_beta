@@ -197,3 +197,25 @@
   }
 }
 
+/* ==========================
+   DARK MODE OVERRIDES
+   ========================== */
+[data-theme="dark"] .back-link { color: #60a5fa; }
+[data-theme="dark"] .back-link:hover { color: #93c5fd; }
+
+[data-theme="dark"] .item-stats-row { background: var(--bg-card, #111827); border: 1px solid var(--border-primary, #374151); }
+[data-theme="dark"] .report-meta-info { background: var(--bg-card, #111827); border: 1px solid var(--border-primary, #374151); }
+[data-theme="dark"] .meta-item { color: var(--text-tertiary, #9ca3af); }
+[data-theme="dark"] .items-title { color: var(--text-primary, #f1f5f9); border-bottom-color: var(--border-primary, #374151); }
+[data-theme="dark"] .item-card { background: var(--bg-card, #0f172a); border-color: var(--border-primary, #334155); }
+[data-theme="dark"] .item-card:hover { background: var(--bg-tertiary, #0b1220); border-color: var(--border-secondary, #475569); }
+[data-theme="dark"] .item-name { color: var(--text-primary, #f1f5f9); }
+[data-theme="dark"] .item-comment { color: var(--text-secondary, #cbd5e1); border-top-color: var(--border-primary, #334155); }
+[data-theme="dark"] .item-comment strong { color: var(--text-primary, #f1f5f9); }
+
+/* Modal theming for this page */
+[data-theme="dark"] .modal-overlay { background: rgba(0, 0, 0, 0.8); }
+[data-theme="dark"] .modal-content { background: #1e293b; color: #f1f5f9; }
+[data-theme="dark"] .modal-header { border-bottom-color: #334155; }
+[data-theme="dark"] .modal-subtitle { color: rgba(255, 255, 255, 0.85); }
+

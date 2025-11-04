@@ -48,7 +48,7 @@ interface StatCardData {
 }
 
 interface ActivityItem {
-  id: number;
+  id: string;
   type: 'submitted' | 'approved' | 'pending';
   title: string;
   time: string;
@@ -56,7 +56,7 @@ interface ActivityItem {
 }
 
 interface RecentReport {
-  id: number;
+  id: string;
   title: string;
   status: 'approved' | 'pending' | 'flagged';
   date: string;
@@ -69,7 +69,26 @@ interface WeeklyData {
   count: number;
 }
 
-// MOCK DATA (Simulating API response)
+interface ApiResponse {
+  success: boolean;
+  data: {
+    stats: Omit<StatCardData, 'icon'>[];
+    weeklyData: WeeklyData[];
+    activities: ActivityItem[];
+    recentReports: RecentReport[];
+  };
+  message: string;
+}
+
+// ICON MAPPING CONSTANTS
+const STATS_ICONS = {
+  'Total Students': <Users size={24} />,
+  'Representatives': <UserCheck size={24} />,
+  'Total Classes': <GraduationCap size={24} />,
+  'Total Reports': <FileText size={24} />
+};
+
+// MOCK DATA (Fallback in case API fails)
 const mockStats: StatCardData[] = [
   {
     title: 'Total Students',
@@ -102,18 +121,18 @@ const mockStats: StatCardData[] = [
 ];
 
 const mockActivities: ActivityItem[] = [
-  { id: 1, type: 'submitted', title: 'Safety Inspection Report - Room A101', time: '5 minutes ago', user: 'John Doe (CS Dept)' },
-  { id: 2, type: 'approved', title: 'Weekly Facility Check - Engineering Lab', time: '1 hour ago', user: 'Jane Smith (Engineering)' },
-  { id: 3, type: 'pending', title: 'Monthly Safety Review - Chemistry Lab', time: '2 hours ago', user: 'Mike Johnson (Chemistry)' },
-  { id: 4, type: 'submitted', title: 'Equipment Inspection - Physics Department', time: '4 hours ago', user: 'Sarah Williams (Physics)' },
-  { id: 5, type: 'approved', title: 'Fire Safety Check - Building B', time: '6 hours ago', user: 'Tom Brown (Safety Officer)' }
+  { id: '1', type: 'submitted', title: 'Safety Inspection Report - Room A101', time: '5 minutes ago', user: 'John Doe (CS Dept)' },
+  { id: '2', type: 'approved', title: 'Weekly Facility Check - Engineering Lab', time: '1 hour ago', user: 'Jane Smith (Engineering)' },
+  { id: '3', type: 'pending', title: 'Monthly Safety Review - Chemistry Lab', time: '2 hours ago', user: 'Mike Johnson (Chemistry)' },
+  { id: '4', type: 'submitted', title: 'Equipment Inspection - Physics Department', time: '4 hours ago', user: 'Sarah Williams (Physics)' },
+  { id: '5', type: 'approved', title: 'Fire Safety Check - Building B', time: '6 hours ago', user: 'Tom Brown (Safety Officer)' }
 ];
 
 const mockRecentReports: RecentReport[] = [
-  { id: 1, title: 'Safety Inspection - Room A101', status: 'pending', date: '2024-10-30', representative: 'John Doe', class: 'Computer Science' },
-  { id: 2, title: 'Facility Check - Engineering Lab', status: 'approved', date: '2024-10-30', representative: 'Jane Smith', class: 'Engineering' },
-  { id: 3, title: 'Equipment Inspection - Chemistry Lab', status: 'flagged', date: '2024-10-29', representative: 'Mike Johnson', class: 'Chemistry' },
-  { id: 4, title: 'Fire Safety Check - Building B', status: 'approved', date: '2024-10-29', representative: 'Tom Brown', class: 'Safety Dept' }
+  { id: '1', title: 'Safety Inspection - Room A101', status: 'pending', date: '2024-10-30', representative: 'John Doe', class: 'Computer Science' },
+  { id: '2', title: 'Facility Check - Engineering Lab', status: 'approved', date: '2024-10-30', representative: 'Jane Smith', class: 'Engineering' },
+  { id: '3', title: 'Equipment Inspection - Chemistry Lab', status: 'flagged', date: '2024-10-29', representative: 'Mike Johnson', class: 'Chemistry' },
+  { id: '4', title: 'Fire Safety Check - Building B', status: 'approved', date: '2024-10-29', representative: 'Tom Brown', class: 'Safety Dept' }
 ];
 
 const mockWeeklyData: WeeklyData[] = [
@@ -142,24 +161,68 @@ const AdminDashboardPage = () => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [reports, setReports] = useState<RecentReport[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate API call with loading
-  useEffect(() => {
-    const fetchData = async () => {
+  /**
+   * FETCH DASHBOARD DATA FROM API
+   */
+  const fetchDashboardData = async () => {
+    try {
       setLoading(true);
+      setError(null);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch('http://localhost:5000/api/admin/dashboard/getAdminDashboardData');
+      const result: ApiResponse = await response.json();
       
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to fetch dashboard data');
+      }
+      
+      // Transform API data to match frontend format with icons
+      const transformedStats = result.data.stats.map(stat => ({
+        ...stat,
+        icon: STATS_ICONS[stat.title as keyof typeof STATS_ICONS]
+      }));
+      
+      setStats(transformedStats);
+      setActivities(result.data.activities);
+      setReports(result.data.recentReports);
+      setWeeklyData(result.data.weeklyData);
+      
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      
+      // Fallback to mock data
       setStats(mockStats);
       setActivities(mockActivities);
       setReports(mockRecentReports);
       setWeeklyData(mockWeeklyData);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchData();
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchDashboardData();
   }, []);
+
+  /**
+   * RENDER ERROR MESSAGE
+   */
+  const renderErrorMessage = () => (
+    <div className="error-banner slide-in-right">
+      <AlertCircle size={20} />
+      <span>{error}</span>
+      <button 
+        onClick={fetchDashboardData}
+        className="retry-button"
+      >
+        Retry
+      </button>
+    </div>
+  );
 
   return (
     <AdminLayout>
@@ -182,6 +245,9 @@ const AdminDashboardPage = () => {
         </p>
       </div>
 
+      {/* ERROR BANNER */}
+      {error && renderErrorMessage()}
+
       {/* STATISTICS CARDS */}
       <div className="stats-grid">
         {loading ? (
@@ -198,7 +264,7 @@ const AdminDashboardPage = () => {
         ) : (
           stats.map((stat, index) => (
             <div 
-              key={index} 
+              key={stat.title}
               className="stat-card fade-in"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
@@ -213,7 +279,7 @@ const AdminDashboardPage = () => {
               </div>
               <div className="stat-content">
                 <h3 className="stat-title">{stat.title}</h3>
-                <div className="stat-value counter">{stat.value}</div>
+                <div className="stat-value counter">{stat.value.toLocaleString()}</div>
               </div>
             </div>
           ))
@@ -240,12 +306,12 @@ const AdminDashboardPage = () => {
             ) : (
               <div className="weekly-chart">
                 {weeklyData.map((data, index) => (
-                  <div key={index} className="chart-bar-wrapper">
+                  <div key={data.day} className="chart-bar-wrapper">
                     <div className="chart-bar-container">
                       <div 
                         className="chart-bar slide-up"
                         style={{ 
-                          height: `${(data.count / 70) * 100}%`,
+                          height: `${(data.count / Math.max(...weeklyData.map(d => d.count), 1)) * 100}%`,
                           animationDelay: `${0.5 + index * 0.1}s`
                         }}
                       >
@@ -318,7 +384,7 @@ const AdminDashboardPage = () => {
               <div className="quick-links-grid">
                 {quickLinks.map((link, index) => (
                   <Link 
-                    key={index} 
+                    key={link.title}
                     href={link.href} 
                     className="quick-link-item scale-in"
                     style={{ animationDelay: `${0.7 + index * 0.1}s` }}
@@ -380,4 +446,3 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
-
