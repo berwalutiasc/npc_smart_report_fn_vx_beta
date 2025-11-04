@@ -2,7 +2,7 @@
 
 .btn-add-rep {
   padding: 0.75rem 1.5rem;
-  background: #3b82f6;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -23,10 +23,10 @@
 
 .department-select {
   padding: 0.5rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  background: white;
-  color: #1a202c;
+  background: var(--bg-card);
+  color: var(--text-primary);
   font-size: 0.875rem;
   cursor: pointer;
   outline: none;
@@ -34,11 +34,11 @@
 }
 
 .department-select:hover {
-  border-color: #cbd5e0;
+  border-color: var(--border-secondary);
 }
 
 .department-select:focus {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -50,26 +50,27 @@
 }
 
 .rep-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-primary);
   overflow: hidden;
-  opacity: 0;
+  opacity: 1;
   transition: all 0.3s ease;
 }
 
 .rep-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  border-color: #cbd5e0;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-secondary);
 }
 
 .rep-card-header {
   padding: 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-tertiary);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .rep-avatar {
@@ -112,20 +113,20 @@
 .rep-name {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a202c;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .rep-class {
   font-size: 0.875rem;
-  color: #3b82f6;
+  color: var(--color-primary);
   font-weight: 500;
   margin: 0;
 }
 
 .rep-department {
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -134,7 +135,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem;
-  background: #f7fafc;
+  background: var(--bg-tertiary);
   border-radius: 8px;
 }
 
@@ -143,7 +144,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--text-tertiary);
 }
 
 .rep-stats {
@@ -155,20 +156,20 @@
 .rep-stat {
   text-align: center;
   padding: 0.75rem;
-  background: #f7fafc;
+  background: var(--bg-tertiary);
   border-radius: 8px;
 }
 
 .rep-stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text-primary);
   line-height: 1;
 }
 
 .rep-stat-label {
   font-size: 0.75rem;
-  color: #718096;
+  color: var(--text-tertiary);
   margin-top: 0.25rem;
 }
 
@@ -849,4 +850,90 @@
 .dark .glass {
   background: rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Theme-aware classes for representatives page */
+.stat-card {
+  background: var(--bg-card);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-value {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-title {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.filters-section {
+  background: var(--bg-card);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-box {
+  background: var(--bg-card);
+  border-radius: 0.5rem;
+}
+
+.search-box input {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
+}
+
+.menu-dropdown {
+  background: var(--bg-card) !important;
+  border-color: var(--border-primary) !important;
+}
+
+.menu-item {
+  color: var(--text-primary) !important;
+}
+
+.menu-item:hover {
+  background: var(--bg-hover) !important;
+}
+
+.rep-role {
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.progress-bar {
+  background: var(--bg-tertiary) !important;
+}
+
+.empty-state {
+  color: var(--text-tertiary);
+}
+
+.loading-state {
+  color: var(--text-tertiary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+p {
+  color: var(--text-secondary);
 }

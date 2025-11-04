@@ -315,9 +315,9 @@ const ItemsPage = () => {
   };
 
   const getStatusColor = (rate: number) => {
-    if (rate >= 90) return 'text-emerald-600 dark:text-emerald-400';
-    if (rate >= 80) return 'text-amber-600 dark:text-amber-400';
-    return 'text-rose-600 dark:text-rose-400';
+    if (rate >= 90) return 'text-emerald-600';
+    if (rate >= 80) return 'text-amber-600';
+    return 'text-rose-600';
   };
 
   const getStatusBgColor = (rate: number) => {
@@ -330,10 +330,10 @@ const ItemsPage = () => {
    * RENDER ERROR MESSAGE
    */
   const renderErrorMessage = () => (
-    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 dark:bg-red-900/20 dark:border-red-800">
+    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
       <div className="flex items-center gap-3">
-        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-        <span className="text-red-800 dark:text-red-200 flex-1">{error}</span>
+        <AlertCircle className="w-5 h-5 text-red-600" />
+        <span className="text-red-800 flex-1">{error}</span>
         <button 
           onClick={fetchItems}
           className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 text-sm font-medium"
@@ -349,8 +349,8 @@ const ItemsPage = () => {
     return (
       <AdminLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading inspection items...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading inspection items...</p>
         </div>
       </AdminLayout>
     );
@@ -362,8 +362,8 @@ const ItemsPage = () => {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Inspection Items</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <h1 className="text-3xl font-bold text-gray-900">Inspection Items</h1>
+            <p className="text-gray-600 mt-2">
               Manage all inspection items used in reports
             </p>
           </div>
@@ -371,14 +371,14 @@ const ItemsPage = () => {
             <button 
               onClick={fetchItems}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
             <button 
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add New Item
@@ -392,57 +392,57 @@ const ItemsPage = () => {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <FileText className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalItems}</p>
-              <p className="text-gray-600 dark:text-gray-400">Total Items</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
+              <p className="text-gray-600">Total Items</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-rose-100 dark:bg-rose-900 rounded-lg">
-              <Shield className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+            <div className="p-3 bg-rose-100 rounded-lg">
+              <Shield className="w-6 h-6 text-rose-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.mandatory}</p>
-              <p className="text-gray-600 dark:text-gray-400">Mandatory</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.mandatory}</p>
+              <p className="text-gray-600">Mandatory</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalUsage.toLocaleString()}</p>
-              <p className="text-gray-600 dark:text-gray-400">Total Usage</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalUsage.toLocaleString()}</p>
+              <p className="text-gray-600">Total Usage</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-3 bg-emerald-100 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.avgGoodRate}%</p>
-              <p className="text-gray-600 dark:text-gray-400">Avg Good Rate</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.avgGoodRate}%</p>
+              <p className="text-gray-600">Avg Good Rate</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
+      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search Box */}
           <div className="flex-1 relative">
@@ -452,7 +452,7 @@ const ItemsPage = () => {
               placeholder="Search items by name or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -462,7 +462,7 @@ const ItemsPage = () => {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {categories.map(cat => (
                 <option key={cat} value={cat}>
@@ -478,9 +478,9 @@ const ItemsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredItems.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
-            <FileText className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No items found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <FileText className="w-16 h-16 text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+            <p className="text-gray-500">
               {searchTerm || categoryFilter !== 'all' 
                 ? 'No items match your current filters' 
                 : 'No inspection items available'
@@ -494,7 +494,7 @@ const ItemsPage = () => {
             const flaggedRate = Math.round((item.flaggedCount / item.usageCount) * 100);
 
             return (
-              <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+              <div key={item.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                 {/* Card Header with Gradient */}
                 <div className={`rounded-t-xl p-6 bg-gradient-to-r ${getCategoryColor(item.category)}`}>
                   <div className="flex items-start justify-between">
@@ -518,24 +518,24 @@ const ItemsPage = () => {
                       </button>
                       
                       {showActionMenu === item.id && (
-                        <div className="absolute right-0 top-10 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 py-1">
+                        <div className="absolute right-0 top-10 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
                           <button
                             onClick={() => handleViewItem(item)}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                           >
                             <Eye className="w-4 h-4" />
                             View Details
                           </button>
                           <button
                             onClick={() => handleEditItem(item)}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                           >
                             <Edit2 className="w-4 h-4" />
                             Edit Item
                           </button>
                           <button
                             onClick={() => handleDeleteItem(item)}
-                            className="w-full px-4 py-2 text-left text-sm text-rose-600 dark:text-rose-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm text-rose-600 hover:bg-gray-100 flex items-center gap-2"
                           >
                             <Trash2 className="w-4 h-4" />
                             Delete Item
@@ -560,7 +560,7 @@ const ItemsPage = () => {
                 <div className="p-6">
                   {/* Description */}
                   <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    <p className="text-sm text-gray-600 line-clamp-2">
                       {item.description}
                     </p>
                   </div>
@@ -568,36 +568,36 @@ const ItemsPage = () => {
                   {/* Usage Statistics */}
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Usage Statistics</span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">{item.usageCount.toLocaleString()} times</span>
+                      <span className="text-sm font-medium text-gray-700">Usage Statistics</span>
+                      <span className="text-sm text-gray-500">{item.usageCount.toLocaleString()} times</span>
                     </div>
 
                     {/* Stats Breakdown */}
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                        <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mx-auto mb-1" />
-                        <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{goodRate}%</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Good</p>
+                      <div className="text-center p-2 bg-emerald-50 rounded-lg">
+                        <CheckCircle className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                        <p className="text-sm font-semibold text-emerald-600">{goodRate}%</p>
+                        <p className="text-xs text-gray-500">Good</p>
                       </div>
-                      <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                        <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
-                        <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">{badRate}%</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Bad</p>
+                      <div className="text-center p-2 bg-amber-50 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 mx-auto mb-1" />
+                        <p className="text-sm font-semibold text-amber-600">{badRate}%</p>
+                        <p className="text-xs text-gray-500">Bad</p>
                       </div>
-                      <div className="text-center p-2 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
-                        <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 mx-auto mb-1" />
-                        <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">{flaggedRate}%</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Flagged</p>
+                      <div className="text-center p-2 bg-rose-50 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 mx-auto mb-1" />
+                        <p className="text-sm font-semibold text-rose-600">{flaggedRate}%</p>
+                        <p className="text-xs text-gray-500">Flagged</p>
                       </div>
                     </div>
 
                     {/* Progress Bar */}
                     <div className="space-y-2">
-                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                      <div className="flex justify-between text-xs text-gray-600">
                         <span>Performance</span>
                         <span>{goodRate}% Good</span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full ${getStatusBgColor(goodRate)}`}
                           style={{ width: `${goodRate}%` }}
@@ -615,23 +615,23 @@ const ItemsPage = () => {
       {/* Item Details Modal */}
       {showItemModal && selectedItem && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedItem.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedItem.name}</h2>
                 <button
                   onClick={() => setShowItemModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                 >
                   <X className="w-6 h-6" />
                 </button>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 rounded-full text-sm font-medium">
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                   {selectedItem.category}
                 </span>
                 {selectedItem.mandatory && (
-                  <span className="px-3 py-1 bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300 rounded-full text-sm font-medium flex items-center gap-1">
+                  <span className="px-3 py-1 bg-rose-100 text-rose-800 rounded-full text-sm font-medium flex items-center gap-1">
                     <Shield className="w-3 h-3" />
                     Mandatory
                   </span>
@@ -643,44 +643,44 @@ const ItemsPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Item Information */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Item Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Item Information</h3>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                      <p className="text-gray-600 dark:text-gray-400">{selectedItem.description}</p>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <p className="text-gray-600">{selectedItem.description}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Usage</label>
-                      <p className="text-gray-900 dark:text-white font-semibold">{selectedItem.usageCount.toLocaleString()} reports</p>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Total Usage</label>
+                      <p className="text-gray-900 font-semibold">{selectedItem.usageCount.toLocaleString()} reports</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Performance Statistics */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Performance Statistics</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Statistics</h3>
                   <div className="space-y-4">
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                        <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                      <div className="text-center p-3 bg-emerald-50 rounded-lg">
+                        <p className="text-2xl font-bold text-emerald-600">
                           {Math.round((selectedItem.goodCount / selectedItem.usageCount) * 100)}%
                         </p>
-                        <p className="text-sm text-emerald-600 dark:text-emerald-400">Good</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{selectedItem.goodCount.toLocaleString()}</p>
+                        <p className="text-sm text-emerald-600">Good</p>
+                        <p className="text-xs text-gray-500">{selectedItem.goodCount.toLocaleString()}</p>
                       </div>
-                      <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                        <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                      <div className="text-center p-3 bg-amber-50 rounded-lg">
+                        <p className="text-2xl font-bold text-amber-600">
                           {Math.round((selectedItem.badCount / selectedItem.usageCount) * 100)}%
                         </p>
-                        <p className="text-sm text-amber-600 dark:text-amber-400">Bad</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{selectedItem.badCount.toLocaleString()}</p>
+                        <p className="text-sm text-amber-600">Bad</p>
+                        <p className="text-xs text-gray-500">{selectedItem.badCount.toLocaleString()}</p>
                       </div>
-                      <div className="text-center p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
-                        <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
+                      <div className="text-center p-3 bg-rose-50 rounded-lg">
+                        <p className="text-2xl font-bold text-rose-600">
                           {Math.round((selectedItem.flaggedCount / selectedItem.usageCount) * 100)}%
                         </p>
-                        <p className="text-sm text-rose-600 dark:text-rose-400">Flagged</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{selectedItem.flaggedCount.toLocaleString()}</p>
+                        <p className="text-sm text-rose-600">Flagged</p>
+                        <p className="text-xs text-gray-500">{selectedItem.flaggedCount.toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
@@ -688,8 +688,8 @@ const ItemsPage = () => {
               </div>
 
               {/* Usage Trend (Placeholder for future implementation) */}
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 text-gray-600">
                   <BarChart3 className="w-4 h-4" />
                   <span className="text-sm">Usage trends and analytics coming soon</span>
                 </div>
@@ -702,13 +702,13 @@ const ItemsPage = () => {
       {/* Add Item Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add New Item</h2>
+                <h2 className="text-xl font-bold text-gray-900">Add New Item</h2>
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -718,7 +718,7 @@ const ItemsPage = () => {
             <div className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Item Name *
                   </label>
                   <input
@@ -726,11 +726,11 @@ const ItemsPage = () => {
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
                     placeholder="e.g., Fire Extinguisher"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
                   </label>
                   <textarea
@@ -738,7 +738,7 @@ const ItemsPage = () => {
                     onChange={(e) => setNewItemDescription(e.target.value)}
                     placeholder="Describe what to check for this item..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -746,13 +746,13 @@ const ItemsPage = () => {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddItem}
-                  className="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+                  className="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Create Item
                 </button>

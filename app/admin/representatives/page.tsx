@@ -187,31 +187,31 @@ const RepresentativesPage = () => {
 
   const getRoleColor = (role: string) => {
     const colors = {
-      'CS': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      'CP': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      'WS': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-      'CC': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+      'CS': 'bg-blue-100 text-blue-800',
+      'CP': 'bg-green-100 text-green-800',
+      'WS': 'bg-purple-100 text-purple-800',
+      'CC': 'bg-orange-100 text-orange-800'
     };
-    return colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    return colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
   const getCompletionColor = (rate: number) => {
-    if (rate >= 90) return 'text-emerald-600 dark:text-emerald-400';
-    if (rate >= 80) return 'text-amber-600 dark:text-amber-400';
-    return 'text-rose-600 dark:text-rose-400';
+    if (rate >= 90) return 'text-emerald-600';
+    if (rate >= 80) return 'text-amber-600';
+    return 'text-rose-600';
   };
 
   /**
    * RENDER ERROR MESSAGE
    */
   const renderErrorMessage = () => (
-    <div className="error-banner bg-red-50 border border-red-200 rounded-xl p-4 mb-6 dark:bg-red-900/20 dark:border-red-800">
+    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
       <div className="flex items-center gap-3">
-        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-        <span className="text-red-800 dark:text-red-200 flex-1">{error}</span>
+        <AlertCircle className="w-5 h-5 text-red-600" />
+        <span className="text-red-800 flex-1">{error}</span>
         <button 
           onClick={fetchRepresentatives}
-          className="retry-button bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 text-sm font-medium"
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 text-sm font-medium"
         >
           <RefreshCw className="w-4 h-4" />
           Retry
@@ -224,8 +224,8 @@ const RepresentativesPage = () => {
     return (
       <AdminLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading representatives...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading representatives...</p>
         </div>
       </AdminLayout>
     );
@@ -237,8 +237,8 @@ const RepresentativesPage = () => {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Representatives</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <h1 className="text-3xl font-bold text-gray-900">Representatives</h1>
+            <p className="text-gray-600 mt-2">
               Manage student representatives and monitor their performance
             </p>
           </div>
@@ -246,14 +246,14 @@ const RepresentativesPage = () => {
             <button 
               onClick={fetchRepresentatives}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
             <button 
               onClick={handleAddRepresentative}
-              className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <UserPlus className="w-4 h-4" />
               Add Representative
@@ -267,45 +267,45 @@ const RepresentativesPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <Users className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
-              <p className="text-gray-600 dark:text-gray-400">Total Representatives</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-gray-600">Total Representatives</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-3 bg-emerald-100 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active}</p>
-              <p className="text-gray-600 dark:text-gray-400">Active</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+              <p className="text-gray-600">Active</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-              <GraduationCap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <GraduationCap className="w-6 h-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.departments}</p>
-              <p className="text-gray-600 dark:text-gray-400">Departments</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.departments}</p>
+              <p className="text-gray-600">Departments</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
+      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search Box */}
           <div className="flex-1 relative">
@@ -315,7 +315,7 @@ const RepresentativesPage = () => {
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -325,7 +325,7 @@ const RepresentativesPage = () => {
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {departments.map(dept => (
                 <option key={dept} value={dept}>
@@ -341,9 +341,9 @@ const RepresentativesPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredReps.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
-            <Users className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No representatives found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <Users className="w-16 h-16 text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No representatives found</h3>
+            <p className="text-gray-500">
               {searchTerm || filterDepartment !== 'all' 
                 ? 'No representatives match your current filters' 
                 : 'No representatives available'
@@ -352,9 +352,9 @@ const RepresentativesPage = () => {
           </div>
         ) : (
           filteredReps.map((rep) => (
-            <div key={rep.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+            <div key={rep.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               {/* Card Header */}
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
                     <div className="relative">
@@ -362,12 +362,12 @@ const RepresentativesPage = () => {
                         <Users className="w-6 h-6 text-white" />
                       </div>
                       {rep.status === 'active' && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></div>
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{rep.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{rep.class}</p>
+                      <h3 className="font-semibold text-gray-900">{rep.name}</h3>
+                      <p className="text-sm text-gray-600">{rep.class}</p>
                     </div>
                   </div>
                   
@@ -375,37 +375,37 @@ const RepresentativesPage = () => {
                   <div className="relative">
                     <button
                       onClick={() => setShowActionMenu(showActionMenu === rep.id ? null : rep.id)}
-                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
                     
                     {showActionMenu === rep.id && (
-                      <div className="absolute right-0 top-10 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 py-1">
+                      <div className="absolute right-0 top-10 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
                         <button
                           onClick={() => handleViewRepresentative(rep)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Eye className="w-4 h-4" />
                           View Details
                         </button>
                         <button
                           onClick={() => handleEditRepresentative(rep)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Edit2 className="w-4 h-4" />
                           Edit
                         </button>
                         <button
                           onClick={() => toggleStatus(rep)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           {rep.status === 'active' ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                           {rep.status === 'active' ? 'Deactivate' : 'Activate'}
                         </button>
                         <button
                           onClick={() => handleDeleteRepresentative(rep)}
-                          className="w-full px-4 py-2 text-left text-sm text-rose-600 dark:text-rose-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-rose-600 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
                           Remove
@@ -425,8 +425,8 @@ const RepresentativesPage = () => {
                   )}
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                     rep.status === 'active' 
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}>
                     {rep.status === 'active' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                     {rep.status}
@@ -438,17 +438,17 @@ const RepresentativesPage = () => {
               <div className="p-6">
                 {/* Department */}
                 <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{rep.department}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Department</p>
+                  <p className="text-sm font-medium text-gray-900">{rep.department}</p>
+                  <p className="text-sm text-gray-600">Department</p>
                 </div>
 
                 {/* Contact Info */}
                 <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Mail className="w-4 h-4" />
                     <span className="truncate">{rep.email}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Phone className="w-4 h-4" />
                     <span>{rep.phone}</span>
                   </div>
@@ -456,25 +456,25 @@ const RepresentativesPage = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{rep.reportsSubmitted}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Reports</p>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-lg font-semibold text-gray-900">{rep.reportsSubmitted}</p>
+                    <p className="text-xs text-gray-600">Reports</p>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <p className={`text-lg font-semibold ${getCompletionColor(rep.avgCompletionRate)}`}>
                       {rep.avgCompletionRate}%
                     </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Completion</p>
+                    <p className="text-xs text-gray-600">Completion</p>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="mt-4">
-                  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
                     <span>Performance</span>
                     <span>{rep.avgCompletionRate}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${
                         rep.avgCompletionRate >= 90 ? 'bg-emerald-500' :

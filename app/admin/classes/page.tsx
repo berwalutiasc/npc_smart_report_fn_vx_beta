@@ -272,10 +272,10 @@ const ClassesPage = () => {
 
   const getYearColor = (year: number) => {
     const colors = [
-      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-      'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+      'bg-blue-100 text-blue-800',
+      'bg-green-100 text-green-800',
+      'bg-purple-100 text-purple-800',
+      'bg-orange-100 text-orange-800'
     ];
     return colors[year - 1] || colors[0];
   };
@@ -284,10 +284,10 @@ const ClassesPage = () => {
    * RENDER ERROR MESSAGE
    */
   const renderErrorMessage = () => (
-    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 dark:bg-red-900/20 dark:border-red-800">
+    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
       <div className="flex items-center gap-3">
-        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-        <span className="text-red-800 dark:text-red-200 flex-1">{error}</span>
+        <AlertCircle className="w-5 h-5 text-red-600" />
+        <span className="text-red-800 flex-1">{error}</span>
         <button 
           onClick={fetchClasses}
           className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 text-sm font-medium"
@@ -303,8 +303,8 @@ const ClassesPage = () => {
     return (
       <AdminLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading classes...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading classes...</p>
         </div>
       </AdminLayout>
     );
@@ -316,8 +316,8 @@ const ClassesPage = () => {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Classes</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <h1 className="text-3xl font-bold text-gray-900">Classes</h1>
+            <p className="text-gray-600 mt-2">
               Manage classes, departments, and student groups
             </p>
           </div>
@@ -325,14 +325,14 @@ const ClassesPage = () => {
             <button 
               onClick={fetchClasses}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
             <button 
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Class
@@ -346,57 +346,57 @@ const ClassesPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <GraduationCap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <GraduationCap className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalClasses}</p>
-              <p className="text-gray-600 dark:text-gray-400">Total Classes</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalClasses}</p>
+              <p className="text-gray-600">Total Classes</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
-              <Users className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-3 bg-emerald-100 rounded-lg">
+              <Users className="w-6 h-6 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalStudents}</p>
-              <p className="text-gray-600 dark:text-gray-400">Total Students</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalStudents}</p>
+              <p className="text-gray-600">Total Students</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-amber-100 dark:bg-amber-900 rounded-lg">
-              <UserCheck className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            <div className="p-3 bg-amber-100 rounded-lg">
+              <UserCheck className="w-6 h-6 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalRepresentatives}</p>
-              <p className="text-gray-600 dark:text-gray-400">Representatives</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalRepresentatives}</p>
+              <p className="text-gray-600">Representatives</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-              <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <FileText className="w-6 h-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.reportsThisWeek}</p>
-              <p className="text-gray-600 dark:text-gray-400">Weekly Reports</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.reportsThisWeek}</p>
+              <p className="text-gray-600">Weekly Reports</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Search */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
+      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -405,7 +405,7 @@ const ClassesPage = () => {
               placeholder="Search classes, departments, or rooms..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -415,9 +415,9 @@ const ClassesPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredClasses.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
-            <GraduationCap className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No classes found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <GraduationCap className="w-16 h-16 text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No classes found</h3>
+            <p className="text-gray-500">
               {searchTerm 
                 ? 'No classes match your search criteria' 
                 : 'No classes available'
@@ -426,7 +426,7 @@ const ClassesPage = () => {
           </div>
         ) : (
           filteredClasses.map((cls) => (
-            <div key={cls.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+            <div key={cls.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
               {/* Card Header with Gradient */}
               <div className={`rounded-t-xl p-6 bg-gradient-to-r ${getDepartmentColor(cls.department)}`}>
                 <div className="flex items-start justify-between">
@@ -450,31 +450,31 @@ const ClassesPage = () => {
                     </button>
                     
                     {showActionMenu === cls.id && (
-                      <div className="absolute right-0 top-10 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 py-1">
+                      <div className="absolute right-0 top-10 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
                         <button
                           onClick={() => handleViewClass(cls)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Eye className="w-4 h-4" />
                           View Details
                         </button>
                         <button
                           onClick={() => handleEditClass(cls)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Edit2 className="w-4 h-4" />
                           Edit Class
                         </button>
                         <button
                           onClick={() => toggleStatus(cls)}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <TrendingUp className="w-4 h-4" />
                           {cls.status === 'active' ? 'Deactivate' : 'Activate'}
                         </button>
                         <button
                           onClick={() => handleDeleteClass(cls)}
-                          className="w-full px-4 py-2 text-left text-sm text-rose-600 dark:text-rose-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full px-4 py-2 text-left text-sm text-rose-600 hover:bg-gray-100 flex items-center gap-2"
                         >
                           <Trash2 className="w-4 h-4" />
                           Delete Class
@@ -492,8 +492,8 @@ const ClassesPage = () => {
                   </span>
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
                     cls.status === 'active' 
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}>
                     {cls.status === 'active' ? 'Active' : 'Inactive'}
                   </span>
@@ -503,31 +503,31 @@ const ClassesPage = () => {
               {/* Card Body */}
               <div className="p-6">
                 {/* Location */}
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4">
+                <div className="flex items-center gap-2 text-gray-600 mb-4">
                   <MapPin className="w-4 h-4" />
                   <span className="text-sm">{cls.room}</span>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{cls.totalStudents}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Students</p>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-lg font-semibold text-gray-900">{cls.totalStudents}</p>
+                    <p className="text-xs text-gray-600">Students</p>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{cls.representatives}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Reps</p>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-lg font-semibold text-gray-900">{cls.representatives}</p>
+                    <p className="text-xs text-gray-600">Reps</p>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{cls.reportsThisWeek}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Reports</p>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-lg font-semibold text-gray-900">{cls.reportsThisWeek}</p>
+                    <p className="text-xs text-gray-600">Reports</p>
                   </div>
                 </div>
 
                 {/* Description */}
                 {cls.description && (
                   <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    <p className="text-sm text-gray-600 line-clamp-2">
                       {cls.description}
                     </p>
                   </div>
@@ -535,11 +535,11 @@ const ClassesPage = () => {
 
                 {/* Progress Bar for Activity */}
                 <div className="mt-4">
-                  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
                     <span>Activity Level</span>
                     <span>{Math.min(100, Math.round((cls.reportsThisWeek / cls.totalStudents) * 100))}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${
                         cls.reportsThisWeek > 10 ? 'bg-emerald-500' :
@@ -558,67 +558,67 @@ const ClassesPage = () => {
       {/* Class Details Modal */}
       {showClassModal && selectedClass && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedClass.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedClass.name}</h2>
                 <button
                   onClick={() => setShowClassModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                 >
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">{selectedClass.department} • Year {selectedClass.year}</p>
+              <p className="text-gray-600 mt-2">{selectedClass.department} • Year {selectedClass.year}</p>
             </div>
 
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Class Information */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Class Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Class Information</h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-gray-400" />
-                      <span className="text-gray-700 dark:text-gray-300">{selectedClass.room}</span>
+                      <span className="text-gray-700">{selectedClass.room}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Users className="w-5 h-5 text-gray-400" />
-                      <span className="text-gray-700 dark:text-gray-300">{selectedClass.totalStudents} students</span>
+                      <span className="text-gray-700">{selectedClass.totalStudents} students</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <UserCheck className="w-5 h-5 text-gray-400" />
-                      <span className="text-gray-700 dark:text-gray-300">{selectedClass.representatives} representatives</span>
+                      <span className="text-gray-700">{selectedClass.representatives} representatives</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-gray-400" />
-                      <span className="text-gray-700 dark:text-gray-300">{selectedClass.reportsThisWeek} reports this week</span>
+                      <span className="text-gray-700">{selectedClass.reportsThisWeek} reports this week</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Recent Activity */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
                   <div className="space-y-2">
                     {selectedClass.recentReports && selectedClass.recentReports.length > 0 ? (
                       selectedClass.recentReports.slice(0, 5).map((report) => (
-                        <div key={report.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div key={report.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-white text-sm">{report.title}</p>
-                            <p className="text-gray-500 dark:text-gray-400 text-xs">{report.reporter}</p>
+                            <p className="font-medium text-gray-900 text-sm">{report.title}</p>
+                            <p className="text-gray-500 text-xs">{report.reporter}</p>
                           </div>
                           <span className={`px-2 py-1 rounded-full text-xs ${
-                            report.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300' :
-                            report.status === 'PENDING' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300' :
-                            'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300'
+                            report.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' :
+                            report.status === 'PENDING' ? 'bg-amber-100 text-amber-800' :
+                            'bg-gray-100 text-gray-800'
                           }`}>
                             {report.status}
                           </span>
                         </div>
                       ))
                     ) : (
-                      <p className="text-gray-500 dark:text-gray-400 text-sm">No recent activity</p>
+                      <p className="text-gray-500 text-sm">No recent activity</p>
                     )}
                   </div>
                 </div>
@@ -627,22 +627,22 @@ const ClassesPage = () => {
               {/* Students List */}
               {selectedClass.studentList && selectedClass.studentList.length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Students ({selectedClass.studentList.length})</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Students ({selectedClass.studentList.length})</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {selectedClass.studentList.slice(0, 6).map((student) => (
-                      <div key={student.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div key={student.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
                           {student.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900 dark:text-white text-sm">{student.name}</p>
-                          <p className="text-gray-500 dark:text-gray-400 text-xs">{student.email}</p>
+                          <p className="font-medium text-gray-900 text-sm">{student.name}</p>
+                          <p className="text-gray-500 text-xs">{student.email}</p>
                         </div>
                         {student.role && (
                           <span className={`px-2 py-1 rounded-full text-xs ${
-                            student.role === 'CS' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' :
-                            student.role === 'CP' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                            'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
+                            student.role === 'CS' ? 'bg-blue-100 text-blue-800' :
+                            student.role === 'CP' ? 'bg-green-100 text-green-800' :
+                            'bg-purple-100 text-purple-800'
                           }`}>
                             {student.role}
                           </span>
@@ -651,7 +651,7 @@ const ClassesPage = () => {
                     ))}
                   </div>
                   {selectedClass.studentList.length > 6 && (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-3">
+                    <p className="text-gray-500 text-sm mt-3">
                       +{selectedClass.studentList.length - 6} more students
                     </p>
                   )}
@@ -665,13 +665,13 @@ const ClassesPage = () => {
       {/* Add Class Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add New Class</h2>
+                <h2 className="text-xl font-bold text-gray-900">Add New Class</h2>
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -681,7 +681,7 @@ const ClassesPage = () => {
             <div className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Class Name *
                   </label>
                   <input
@@ -689,11 +689,11 @@ const ClassesPage = () => {
                     value={newClassName}
                     onChange={(e) => setNewClassName(e.target.value)}
                     placeholder="e.g., Computer Science Year 3"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
                   </label>
                   <textarea
@@ -701,7 +701,7 @@ const ClassesPage = () => {
                     onChange={(e) => setNewClassDescription(e.target.value)}
                     placeholder="Optional class description..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -709,13 +709,13 @@ const ClassesPage = () => {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddClass}
-                  className="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+                  className="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Create Class
                 </button>
