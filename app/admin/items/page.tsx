@@ -15,7 +15,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { 
   FileText,
@@ -26,12 +26,18 @@ import {
   CheckCircle,
   AlertTriangle,
   TrendingUp,
-  Eye
+  Eye,
+  X,
+  BarChart3,
+  Filter,
+  RefreshCw,
+  AlertCircle,
+  MoreVertical,
+  Shield
 } from 'lucide-react';
-import './items.css';
 
 interface InspectionItem {
-  id: number;
+  id: string;
   name: string;
   description: string;
   category: string;
@@ -40,16 +46,53 @@ interface InspectionItem {
   goodCount: number;
   badCount: number;
   flaggedCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: {
+    items: InspectionItem[];
+    stats: {
+      totalItems: number;
+      mandatory: number;
+      totalUsage: number;
+      avgGoodRate: number;
+    };
+    categories: string[];
+    filters: {
+      search: string;
+      category: string;
+    };
+  };
+  message: string;
 }
 
 const ItemsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [items, setItems] = useState<InspectionItem[]>([]);
+  const [stats, setStats] = useState({
+    totalItems: 0,
+    mandatory: 0,
+    totalUsage: 0,
+    avgGoodRate: 0
+  });
+  const [categories, setCategories] = useState<string[]>(['all']);
+  const [selectedItem, setSelectedItem] = useState<InspectionItem | null>(null);
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showActionMenu, setShowActionMenu] = useState<string | null>(null);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemDescription, setNewItemDescription] = useState('');
 
-  // Mock data for inspection items
-  const inspectionItems: InspectionItem[] = [
+  // Mock data for fallback
+  const mockItems: InspectionItem[] = [
     {
-      id: 1,
+      id: '1',
       name: 'Fire Extinguisher',
       description: 'Check if fire extinguisher is accessible and not expired',
       category: 'Safety Equipment',
@@ -60,7 +103,7 @@ const ItemsPage = () => {
       flaggedCount: 23
     },
     {
-      id: 2,
+      id: '2',
       name: 'Emergency Exit Signs',
       description: 'Verify all emergency exit signs are illuminated',
       category: 'Safety Equipment',
@@ -71,7 +114,7 @@ const ItemsPage = () => {
       flaggedCount: 20
     },
     {
-      id: 3,
+      id: '3',
       name: 'Window Glass',
       description: 'Inspect all windows for cracks or damage',
       category: 'Infrastructure',
@@ -82,7 +125,7 @@ const ItemsPage = () => {
       flaggedCount: 33
     },
     {
-      id: 4,
+      id: '4',
       name: 'Floor Condition',
       description: 'Check for spills, cracks, or trip hazards',
       category: 'Infrastructure',
@@ -93,7 +136,7 @@ const ItemsPage = () => {
       flaggedCount: 26
     },
     {
-      id: 5,
+      id: '5',
       name: 'Electrical Outlets',
       description: 'Ensure all outlets are functioning and properly covered',
       category: 'Electrical',
@@ -104,7 +147,7 @@ const ItemsPage = () => {
       flaggedCount: 33
     },
     {
-      id: 6,
+      id: '6',
       name: 'First Aid Kit',
       description: 'Verify first aid kit is stocked and accessible',
       category: 'Safety Equipment',
@@ -113,233 +156,621 @@ const ItemsPage = () => {
       goodCount: 1165,
       badCount: 58,
       flaggedCount: 25
-    },
-    {
-      id: 7,
-      name: 'Chemical Storage',
-      description: 'Check proper labeling and storage of chemicals',
-      category: 'Safety Equipment',
-      mandatory: true,
-      usageCount: 1248,
-      goodCount: 1125,
-      badCount: 88,
-      flaggedCount: 35
-    },
-    {
-      id: 8,
-      name: 'Ventilation System',
-      description: 'Ensure ventilation is working properly',
-      category: 'HVAC',
-      mandatory: true,
-      usageCount: 1248,
-      goodCount: 1155,
-      badCount: 68,
-      flaggedCount: 25
-    },
-    {
-      id: 9,
-      name: 'Safety Equipment',
-      description: 'Check availability of safety goggles, gloves, etc.',
-      category: 'Safety Equipment',
-      mandatory: true,
-      usageCount: 1248,
-      goodCount: 1175,
-      badCount: 50,
-      flaggedCount: 23
-    },
-    {
-      id: 10,
-      name: 'Lighting',
-      description: 'Verify all lights are functioning',
-      category: 'Electrical',
-      mandatory: true,
-      usageCount: 1248,
-      goodCount: 1160,
-      badCount: 62,
-      flaggedCount: 26
     }
   ];
 
-  const categories = ['all', ...Array.from(new Set(inspectionItems.map(item => item.category)))];
+  /**
+   * FETCH ITEMS FROM API
+   */
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (categoryFilter !== 'all') params.append('category', categoryFilter);
 
-  const filteredItems = inspectionItems.filter(item => {
+      const response = await fetch(`http://localhost:5000/api/admin/dashboard/getItems?${params}`);
+      const result: ApiResponse = await response.json();
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to fetch inspection items');
+      }
+      
+      setItems(result.data.items);
+      setStats(result.data.stats);
+      setCategories(result.data.categories);
+      
+    } catch (err) {
+      console.error('Error fetching items:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load inspection items');
+      
+      // Fallback to mock data
+      setItems(mockItems);
+      setStats({
+        totalItems: mockItems.length,
+        mandatory: mockItems.filter(i => i.mandatory).length,
+        totalUsage: mockItems.reduce((sum, i) => sum + i.usageCount, 0),
+        avgGoodRate: Math.round((mockItems.reduce((sum, i) => sum + (i.goodCount / i.usageCount * 100), 0)) / mockItems.length)
+      });
+      setCategories(['all', ...Array.from(new Set(mockItems.map(item => item.category)))]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  // Handle search with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchItems();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, categoryFilter]);
+
+  const filteredItems = items.filter(item => {
     if (categoryFilter !== 'all' && item.category !== categoryFilter) return false;
     if (searchTerm && !item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !item.description.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     return true;
   });
 
-  const stats = {
-    totalItems: inspectionItems.length,
-    mandatory: inspectionItems.filter(i => i.mandatory).length,
-    totalUsage: inspectionItems.reduce((sum, i) => sum + i.usageCount, 0),
-    avgGoodRate: Math.round((inspectionItems.reduce((sum, i) => sum + (i.goodCount / i.usageCount * 100), 0)) / inspectionItems.length)
+  const handleAddItem = async () => {
+    if (!newItemName.trim()) {
+      alert('Please enter an item name');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newItemName,
+          description: newItemDescription
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to create item');
+      }
+
+      setNewItemName('');
+      setNewItemDescription('');
+      setShowAddModal(false);
+      fetchItems(); // Refresh the list
+      
+    } catch (err) {
+      console.error('Error creating item:', err);
+      alert(err instanceof Error ? err.message : 'Failed to create item');
+    }
   };
+
+  const handleViewItem = async (item: InspectionItem) => {
+    try {
+      const response = await fetch(`/api/admin/items/${item.id}`);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to fetch item details');
+      }
+
+      setSelectedItem(result.data.item);
+      setShowItemModal(true);
+    } catch (err) {
+      console.error('Error fetching item details:', err);
+      // Fallback to basic item info
+      setSelectedItem(item);
+      setShowItemModal(true);
+    }
+  };
+
+  const handleEditItem = (item: InspectionItem) => {
+    // Edit item functionality would go here
+    alert(`Edit item: ${item.name}`);
+    setShowActionMenu(null);
+  };
+
+  const handleDeleteItem = async (item: InspectionItem) => {
+    if (confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`)) {
+      try {
+        const response = await fetch(`/api/admin/items/${item.id}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to delete item');
+        }
+
+        fetchItems(); // Refresh the list
+      } catch (err) {
+        console.error('Error deleting item:', err);
+        alert(err instanceof Error ? err.message : 'Failed to delete item');
+      }
+    }
+    setShowActionMenu(null);
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: { [key: string]: string } = {
+      'Safety Equipment': 'from-red-500 to-orange-600',
+      'Infrastructure': 'from-blue-500 to-cyan-600',
+      'Electrical': 'from-yellow-500 to-amber-600',
+      'HVAC': 'from-green-500 to-emerald-600',
+      'Furniture': 'from-purple-500 to-indigo-600',
+      'Equipment': 'from-pink-500 to-rose-600'
+    };
+    return colors[category] || 'from-gray-500 to-gray-600';
+  };
+
+  const getStatusColor = (rate: number) => {
+    if (rate >= 90) return 'text-emerald-600 dark:text-emerald-400';
+    if (rate >= 80) return 'text-amber-600 dark:text-amber-400';
+    return 'text-rose-600 dark:text-rose-400';
+  };
+
+  const getStatusBgColor = (rate: number) => {
+    if (rate >= 90) return 'bg-emerald-500';
+    if (rate >= 80) return 'bg-amber-500';
+    return 'bg-rose-500';
+  };
+
+  /**
+   * RENDER ERROR MESSAGE
+   */
+  const renderErrorMessage = () => (
+    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 dark:bg-red-900/20 dark:border-red-800">
+      <div className="flex items-center gap-3">
+        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+        <span className="text-red-800 dark:text-red-200 flex-1">{error}</span>
+        <button 
+          onClick={fetchItems}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 text-sm font-medium"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading inspection items...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
-      <div className="page-header" style={{ marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: '700', color: '#1a202c', margin: 0 }}>
-            Inspection Items
-          </h1>
-          <p style={{ color: '#718096', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-            Manage all inspection items used in reports
-          </p>
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Inspection Items</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Manage all inspection items used in reports
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={fetchItems}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add New Item
+            </button>
+          </div>
         </div>
-        <button className="btn-add-item">
-          <Plus size={18} />
-          Add New Item
-        </button>
       </div>
 
+      {/* Error Banner */}
+      {error && renderErrorMessage()}
+
       {/* Statistics */}
-      <div className="stats-row" style={{ marginBottom: '2rem' }}>
-        <div className="stat-box fade-in">
-          <div className="stat-box-icon" style={{ backgroundColor: '#3b82f615', color: '#3b82f6' }}>
-            <FileText size={24} />
-          </div>
-          <div className="stat-box-content">
-            <div className="stat-box-value">{stats.totalItems}</div>
-            <div className="stat-box-label">Total Items</div>
-          </div>
-        </div>
-
-        <div className="stat-box fade-in" style={{ animationDelay: '0.1s' }}>
-          <div className="stat-box-icon" style={{ backgroundColor: '#ef444415', color: '#ef4444' }}>
-            <AlertTriangle size={24} />
-          </div>
-          <div className="stat-box-content">
-            <div className="stat-box-value">{stats.mandatory}</div>
-            <div className="stat-box-label">Mandatory</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalItems}</p>
+              <p className="text-gray-600 dark:text-gray-400">Total Items</p>
+            </div>
           </div>
         </div>
 
-        <div className="stat-box fade-in" style={{ animationDelay: '0.2s' }}>
-          <div className="stat-box-icon" style={{ backgroundColor: '#8b5cf615', color: '#8b5cf6' }}>
-            <TrendingUp size={24} />
-          </div>
-          <div className="stat-box-content">
-            <div className="stat-box-value">{stats.totalUsage.toLocaleString()}</div>
-            <div className="stat-box-label">Total Usage</div>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-rose-100 dark:bg-rose-900 rounded-lg">
+              <Shield className="w-6 h-6 text-rose-600 dark:text-rose-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.mandatory}</p>
+              <p className="text-gray-600 dark:text-gray-400">Mandatory</p>
+            </div>
           </div>
         </div>
 
-        <div className="stat-box fade-in" style={{ animationDelay: '0.3s' }}>
-          <div className="stat-box-icon" style={{ backgroundColor: '#10b98115', color: '#10b981' }}>
-            <CheckCircle size={24} />
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalUsage.toLocaleString()}</p>
+              <p className="text-gray-600 dark:text-gray-400">Total Usage</p>
+            </div>
           </div>
-          <div className="stat-box-content">
-            <div className="stat-box-value">{stats.avgGoodRate}%</div>
-            <div className="stat-box-label">Avg Good Rate</div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.avgGoodRate}%</p>
+              <p className="text-gray-600 dark:text-gray-400">Avg Good Rate</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="filters-section fade-in" style={{ animationDelay: '0.4s', marginBottom: '2rem' }}>
-        <div className="search-box">
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder="Search items by name or description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search Box */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search items by name or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
 
-        <div className="category-filter">
-          <label>Category:</label>
-          <select
-            className="category-select"
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            {categories.map(cat => (
-              <option key={cat} value={cat}>
-                {cat === 'all' ? 'All Categories' : cat}
-              </option>
-            ))}
-          </select>
+          {/* Category Filter */}
+          <div className="flex items-center gap-3">
+            <Filter className="w-5 h-5 text-gray-400" />
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>
+                  {cat === 'all' ? 'All Categories' : cat}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Items List */}
-      <div className="items-grid">
-        {filteredItems.map((item, index) => {
-          const goodRate = Math.round((item.goodCount / item.usageCount) * 100);
-          const badRate = Math.round((item.badCount / item.usageCount) * 100);
-          const flaggedRate = Math.round((item.flaggedCount / item.usageCount) * 100);
+      {/* Items Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredItems.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+            <FileText className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No items found</h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              {searchTerm || categoryFilter !== 'all' 
+                ? 'No items match your current filters' 
+                : 'No inspection items available'
+              }
+            </p>
+          </div>
+        ) : (
+          filteredItems.map((item) => {
+            const goodRate = Math.round((item.goodCount / item.usageCount) * 100);
+            const badRate = Math.round((item.badCount / item.usageCount) * 100);
+            const flaggedRate = Math.round((item.flaggedCount / item.usageCount) * 100);
 
-          return (
-            <div key={item.id} className="item-card slide-in-up" style={{ animationDelay: `${0.5 + index * 0.05}s` }}>
-              <div className="item-card-header">
-                <div className="item-header-top">
-                  <h3 className="item-name">{item.name}</h3>
+            return (
+              <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                {/* Card Header with Gradient */}
+                <div className={`rounded-t-xl p-6 bg-gradient-to-r ${getCategoryColor(item.category)}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                        <FileText className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-white text-lg">{item.name}</h3>
+                        <p className="text-white/80 text-sm">{item.category}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Action Menu */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowActionMenu(showActionMenu === item.id ? null : item.id)}
+                        className="p-2 text-white/80 hover:text-white rounded-lg hover:bg-white/20 transition-colors"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      
+                      {showActionMenu === item.id && (
+                        <div className="absolute right-0 top-10 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 py-1">
+                          <button
+                            onClick={() => handleViewItem(item)}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View Details
+                          </button>
+                          <button
+                            onClick={() => handleEditItem(item)}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            Edit Item
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item)}
+                            className="w-full px-4 py-2 text-left text-sm text-rose-600 dark:text-rose-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete Item
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Mandatory Badge */}
                   {item.mandatory && (
-                    <span className="mandatory-badge">
-                      <AlertTriangle size={14} />
-                      Mandatory
-                    </span>
+                    <div className="flex items-center gap-2 mt-4">
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 text-white rounded-full text-sm font-medium backdrop-blur-sm">
+                        <Shield className="w-3 h-3" />
+                        Mandatory
+                      </span>
+                    </div>
                   )}
                 </div>
-                <p className="item-description">{item.description}</p>
-                <span className="item-category">{item.category}</span>
+
+                {/* Card Body */}
+                <div className="p-6">
+                  {/* Description */}
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  {/* Usage Statistics */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Usage Statistics</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{item.usageCount.toLocaleString()} times</span>
+                    </div>
+
+                    {/* Stats Breakdown */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                        <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mx-auto mb-1" />
+                        <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{goodRate}%</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Good</p>
+                      </div>
+                      <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
+                        <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">{badRate}%</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Bad</p>
+                      </div>
+                      <div className="text-center p-2 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 mx-auto mb-1" />
+                        <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">{flaggedRate}%</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Flagged</p>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                        <span>Performance</span>
+                        <span>{goodRate}% Good</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${getStatusBgColor(goodRate)}`}
+                          style={{ width: `${goodRate}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+            );
+          })
+        )}
+      </div>
 
-              <div className="item-card-body">
-                <div className="item-usage">
-                  <div className="usage-header">
-                    <span className="usage-label">Usage Statistics</span>
-                    <span className="usage-count">{item.usageCount.toLocaleString()} times</span>
-                  </div>
+      {/* Item Details Modal */}
+      {showItemModal && selectedItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedItem.name}</h2>
+                <button
+                  onClick={() => setShowItemModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 rounded-full text-sm font-medium">
+                  {selectedItem.category}
+                </span>
+                {selectedItem.mandatory && (
+                  <span className="px-3 py-1 bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300 rounded-full text-sm font-medium flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    Mandatory
+                  </span>
+                )}
+              </div>
+            </div>
 
-                  <div className="usage-breakdown">
-                    <div className="usage-stat good">
-                      <CheckCircle size={16} />
-                      <span className="stat-percentage">{goodRate}%</span>
-                      <span className="stat-count">({item.goodCount})</span>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Item Information */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Item Information</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                      <p className="text-gray-600 dark:text-gray-400">{selectedItem.description}</p>
                     </div>
-                    <div className="usage-stat bad">
-                      <AlertTriangle size={16} />
-                      <span className="stat-percentage">{badRate}%</span>
-                      <span className="stat-count">({item.badCount})</span>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Usage</label>
+                      <p className="text-gray-900 dark:text-white font-semibold">{selectedItem.usageCount.toLocaleString()} reports</p>
                     </div>
-                    <div className="usage-stat flagged">
-                      <AlertTriangle size={16} />
-                      <span className="stat-percentage">{flaggedRate}%</span>
-                      <span className="stat-count">({item.flaggedCount})</span>
-                    </div>
-                  </div>
-
-                  <div className="usage-bar">
-                    <div className="bar-segment good" style={{ width: `${goodRate}%` }}></div>
-                    <div className="bar-segment bad" style={{ width: `${badRate}%` }}></div>
-                    <div className="bar-segment flagged" style={{ width: `${flaggedRate}%` }}></div>
                   </div>
                 </div>
 
-                <div className="item-actions">
-                  <button className="btn-item-view">
-                    <Eye size={16} />
-                    View
-                  </button>
-                  <button className="btn-item-edit">
-                    <Edit2 size={16} />
-                    Edit
-                  </button>
-                  <button className="btn-item-delete">
-                    <Trash2 size={16} />
-                  </button>
+                {/* Performance Statistics */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Performance Statistics</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                        <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                          {Math.round((selectedItem.goodCount / selectedItem.usageCount) * 100)}%
+                        </p>
+                        <p className="text-sm text-emerald-600 dark:text-emerald-400">Good</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{selectedItem.goodCount.toLocaleString()}</p>
+                      </div>
+                      <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                        <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                          {Math.round((selectedItem.badCount / selectedItem.usageCount) * 100)}%
+                        </p>
+                        <p className="text-sm text-amber-600 dark:text-amber-400">Bad</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{selectedItem.badCount.toLocaleString()}</p>
+                      </div>
+                      <div className="text-center p-3 bg-rose-50 dark:bg-rose-900/20 rounded-lg">
+                        <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
+                          {Math.round((selectedItem.flaggedCount / selectedItem.usageCount) * 100)}%
+                        </p>
+                        <p className="text-sm text-rose-600 dark:text-rose-400">Flagged</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{selectedItem.flaggedCount.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Usage Trend (Placeholder for future implementation) */}
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="text-sm">Usage trends and analytics coming soon</span>
                 </div>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Item Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add New Item</h2>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Item Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    placeholder="e.g., Fire Extinguisher"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={newItemDescription}
+                    onChange={(e) => setNewItemDescription(e.target.value)}
+                    placeholder="Describe what to check for this item..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddItem}
+                  className="flex-1 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
+                >
+                  Create Item
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Close action menu when clicking outside */}
+      {showActionMenu && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowActionMenu(null)}
+        />
+      )}
     </AdminLayout>
   );
 };
 
 export default ItemsPage;
-

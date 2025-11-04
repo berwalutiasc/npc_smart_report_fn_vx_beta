@@ -87,19 +87,26 @@ const ProfilePage = () => {
   const [stats, setStats] = useState<StatItem[]>([]);
   const { logout, isLoggingOut } = useLogout();
 
+  const [studentEmail, setStudentEmail] = useState<string | null>(null);
+  useEffect(() => {
+    setStudentEmail(localStorage.getItem('studentEmail'));
+  }, []);
   // Get current user ID - Replace with your actual auth context
-  const getCurrentUserId = () => {
-    // TODO: Replace with actual user ID from your authentication system
-    return localStorage.getItem('studentEmail') || 'current-user-id';
-  };
+
 
   // Fetch student profile from API
   const fetchStudentProfile = async () => {
     setIsLoading(true);
     try {
-      const userId = getCurrentUserId();
-      // const response = await fetch(`http://localhost:5000/api/student/dashboard/getProfile?email=${userId}`);
-      const response = await fetch(`http://localhost:5000/api/student/dashboard/maserati?email=${userId}`);
+      const userId = studentEmail;
+      const response = await fetch(`http://localhost:5000/api/student/dashboard/getProfile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+      // const response = await fetch(`http://localhost:5000/api/student/dashboard/maserati?email=${userId}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch profile ${response.status}`);
@@ -182,7 +189,7 @@ const ProfilePage = () => {
     setIsSaving(true);
     
     try {
-      const userId = getCurrentUserId();
+      const userId = studentEmail;
       const response = await fetch('http://localhost:5000/api/student/update-profile', {
         method: 'PUT',
         headers: {
@@ -236,7 +243,7 @@ const ProfilePage = () => {
     setIsSaving(true);
     
     try {
-      const userId = getCurrentUserId();
+      const userId = studentEmail;
       const response = await fetch('http://localhost:5000/api/student/change-password', {
         method: 'POST',
         headers: {
