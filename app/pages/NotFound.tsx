@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 
 const NotFound = () => {
-  const pathname = usePathname();
+  const pathname = usePathname(); //to get the link
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", pathname);
