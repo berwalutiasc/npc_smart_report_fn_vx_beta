@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 export function middleware(request) {
   const { pathname, searchParams } = request.nextUrl
   
-  // Get token from cookie - using the correct name 'tokenUser'
+  // Get token from cookie - using the correct name 'tokenUser' //gake gake ndimo gupfa
   const token = request.cookies.get('loginToken')?.value
 
   // Define public paths
